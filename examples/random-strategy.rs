@@ -1,4 +1,5 @@
 fn main() {
-    let strategy = oblique::random();
-    println!("The next move: {}", strategy);
+    if let Some(deck) = oblique::decks().first() {
+        println!("The next move: {}", deck.random());
+    }
 }

@@ -2,197 +2,209 @@
 //! in a library, for those moments when the work is stuck and a dilemma needs a
 //! lateral nudge.
 //!
-//! The list here is a curated amalgam of the card text from several editions of
-//! the deck, so it includes variant wordings of some strategies (and one blank
-//! white card, as the deck itself does). Cards that carry several lines of text
-//! contain embedded newline and tab characters; print them as-is and they will
-//! render the way the card reads.
+//! The crate holds one deck per module under [`decks`], each drawn by the same
+//! mechanism. The top-level functions draw from the Oblique Strategies deck, so
+//! they read the way they always have; use [`decks()`] or [`deck_by_id()`] to
+//! reach any of the others.
+//!
+//! Cards that carry several lines of text contain embedded newline and tab
+//! characters; print them as-is and they will render the way the card reads.
+//! Two cards in the Oblique Strategies deck are not instructions at all — the
+//! blank white card and Pae White's graphic metacard — so card text is not
+//! always a prompt.
 //!
 //! # Examples
 //!
 //! ```
-//! let strategy = oblique::random();
-//! println!("The next move: {}", strategy);
+//! let deck = oblique::decks().first().expect("a deck is always compiled in");
+//! println!("The next move: {}", deck.random());
 //! ```
 
-const CANONICAL_STRATEGIES: &[&str] = &[
-    "(Organic) machinery",
-    "A line has two sides",
-    "A very small object\n\tIts center",
-    "Abandon desire",
-    "Abandon normal instructions",
-    "Abandon normal instruments",
-    "Accept advice",
-    "Accretion",
-    "Adding on",
-    "Allow an easement (an easement is the abandonment of a stricture)",
-    "Always first steps",
-    "Always give yourself credit for having more than personality",
-    "Are there sections? Consider transitions",
-    "Ask people to work against their better judgement",
-    "Ask your body",
-    "Assemble some of the elements in a group and treat the group",
-    "Balance the consistency principle with the inconsistency principle",
-    "Be dirty",
-    "Be extravagant",
-    "Be less critical",
-    "Breathe more deeply",
-    "Bridges\n\t-build\n\t-burn",
-    "Cascades",
-    "Change ambiguities to specifics",
-    "Change instrument roles",
-    "Change nothing and continue consistently",
-    "Change nothing and continue with immaculate consistency",
-    "Change specifics to ambiguities",
-    "Children\n\t-speaking\n\t-singing",
-    "Cluster analysis",
-    "Consider different fading systems",
-    "Consider transitions",
-    "Consult other sources\n\t-promising\n\t-unpromising",
-    "Convert a melodic element into a rhythmic element",
-    "Courage!",
-    "Cut a vital connection",
-    "Decorate, decorate",
-    "Define an area as 'safe' and use it as an anchor",
-    "Destroy\n\t-nothing\n\t-the most important thing",
-    "Discard an axiom",
-    "Disciplined self-indulgence",
-    "Disconnect from desire",
-    "Discover the recipes you are using and abandon them",
-    "Discover your formulas and abandon them",
-    "Display your talent",
-    "Distorting time",
-    "Do nothing for as long as possible",
-    "Do something boring",
-    "Do something sudden, destructive and unpredictable",
-    "Do the last thing first",
-    "Do the washing up",
-    "Do the words need changing?",
-    "Do we need holes?",
-    "Don't avoid what is easy",
-    "Don't be afraid of things because they're easy to do",
-    "Don't be frightened of cliches",
-    "Don't be frightened to display your talents",
-    "Don't break the silence",
-    "Don't stress one thing more than another",
-    "Emphasize differences",
-    "Emphasize repetitions",
-    "Emphasize the flaws",
-    "Faced with a choice, do both",
-    "Feed the recording back out of the medium",
-    "Fill every beat with something",
-    "Find a safe part and use it as an anchor",
-    "Get your neck massaged",
-    "Ghost echoes",
-    "Give the game away",
-    "Give the name away",
-    "Give way to your worst impulse",
-    "Go outside. Shut the door.",
-    "Go slowly all the way round the outside",
-    "Go to an extreme, come part way back",
-    "Honor thy error as a hidden intention",
-    "Honor thy mistake as a hidden intention",
-    "How would someone else do it?",
-    "How would you have done it?",
-    "Humanize something free of error",
-    "Idiot glee (?)",
-    "Imagine the piece as a set of disconnected events",
-    "In total darkness, or in a very large room, very quietly",
-    "Infinitesimal gradations",
-    "Intentions\n\t-nobility of\n\t-humility of\n\t-credibility of",
-    "Into the impossible",
-    "Is it finished?",
-    "Is something missing?",
-    "Is the information correct?",
-    "Is the style right?",
-    "Is there something missing?",
-    "It is quite possible (after all)",
-    "It is simply a matter of work",
-    "Just carry on",
-    "Left channel, right channel, center channel",
-    "Listen to the quiet voice",
-    "Look at the order in which you do things",
-    "Look closely at the most embarrassing details & amplify them",
-    "Lost in useless territory",
-    "Lowest common denominator",
-    "Magnify the most difficult details",
-    "Make a blank valuable by putting it in an exquisite frame",
-    "Make a sudden, destructive unpredictable action; incorporate",
-    "Make an exhaustive list of everything you might do & do the last thing on the list",
-    "Make it more sensual",
-    "Make what's perfect more human",
-    "Mechanicalize something idiosyncratic",
-    "Move towards the unimportant",
-    "Mute and continue",
-    "Not building a wall but making a brick",
-    "Not building a wall; making a brick",
-    "Once the search has begun, something will be found",
-    "Only a part, not the whole",
-    "Only one element of each kind",
-    "Overtly resist change",
-    "Pae White's non-blank graphic metacard",
-    "Put in earplugs",
-    "Question the heroic",
-    "Reevaluation (a warm feeling)",
-    "Remember those quiet evenings",
-    "Remove a restriction",
-    "Remove ambiguities and convert to specifics",
-    "Remove specifics and convert to ambiguities",
-    "Repetition is a form of change",
-    "Retrace your steps",
-    "Reverse",
-    "Short circuit (example; a man eating peas with the idea that they will improve his virility shovels them straight into his lap)",
-    "Simple subtraction",
-    "Simply a matter of work",
-    "Slow preparation, fast execution",
-    "Spectrum analysis",
-    "State the problem as clearly as possible",
-    "Take a break",
-    "Take away the elements in order of apparent non-importance",
-    "Take away the important parts",
-    "Tape your mouth",
-    "The inconsistency principle",
-    "The most easily forgotten thing is the most important",
-    "The most important thing is the thing most easily forgotten",
-    "The tape is now the music",
-    "Think\n\t-inside the work\n\t-outside the work",
-    "Think of the radio",
-    "Tidy up",
-    "Towards the insignificant",
-    "Trust in the you of now",
-    "Try faking it",
-    "Turn it upside down",
-    "Twist the spine",
-    "Use 'unqualified' people",
-    "Use an old idea",
-    "Use an unacceptable color",
-    "Use cliches",
-    "Use fewer notes",
-    "Use filters",
-    "Use something nearby as a model",
-    "Use your own ideas",
-    "Voice your suspicions",
-    "Water",
-    "What are the sections sections of?\n\tImagine a caterpillar moving",
-    "What are you really thinking about just now?",
-    "What context would look right?",
-    "What is the reality of the situation?",
-    "What is the simplest solution?",
-    "What mistakes did you make last time?",
-    "What to increase? What to reduce? What to maintain?",
-    "What were you really thinking about just now?",
-    "What would your closest friend do?",
-    "What wouldn't you do?",
-    "When is it for?",
-    "Where is the edge?",
-    "Which parts can be grouped?",
-    "Work at a different speed",
-    "Would anyone want it?",
-    "You are an engineer",
-    "You can only make one dot at a time",
-    "You don't have to be ashamed of using your own ideas",
-    "[blank white card]",
-];
+pub mod decks;
+
+#[cfg(not(any(
+    feature = "oblique",
+    feature = "examen",
+    feature = "constraints",
+    feature = "absurd",
+    feature = "attention",
+    feature = "memento",
+    feature = "dramatis",
+    feature = "stuck"
+)))]
+compile_error!("at least one deck feature must be enabled; the default is `oblique`");
+
+/// Where a deck's text comes from, and who to credit for it.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum Provenance {
+    /// Text by a named author, reproduced with attribution.
+    Attributed(&'static str),
+    /// Written for this crate.
+    Original,
+    /// Drawn from public-domain sources, named here.
+    PublicDomain(&'static str),
+    /// A restatement, in original words, of a technique that is itself not
+    /// copyrightable. The source of the technique is named here.
+    Technique(&'static str),
+}
+
+impl Provenance {
+    /// The credit line for this provenance, if it has one.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use oblique::Provenance;
+    /// assert_eq!(Provenance::Original.attribution(), None);
+    /// assert!(Provenance::Attributed("Eno").attribution().is_some());
+    /// ```
+    #[must_use]
+    pub const fn attribution(&self) -> Option<&'static str> {
+        match self {
+            Self::Attributed(who) | Self::PublicDomain(who) | Self::Technique(who) => Some(who),
+            Self::Original => None,
+        }
+    }
+}
+
+/// A deck of cards, drawn at random.
+///
+/// # Examples
+///
+/// ```
+/// let deck = oblique::decks().first().expect("a deck is always compiled in");
+/// assert!(!deck.random().is_empty());
+/// ```
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct Deck {
+    /// Short, stable, lowercase identifier. Unique across the crate.
+    pub id: &'static str,
+    /// Human-readable name.
+    pub name: &'static str,
+    /// One line on what the deck is for.
+    pub blurb: &'static str,
+    /// Where the text came from.
+    pub provenance: Provenance,
+    /// The cards themselves, sorted by their first line.
+    pub cards: &'static [&'static str],
+}
+
+impl Deck {
+    /// Return this deck's cards as a slice of &str. Does not allocate.
+    ///
+    /// ```
+    /// let deck = oblique::decks().first().expect("a deck is always compiled in");
+    /// assert_eq!(deck.cards().len(), deck.count());
+    /// ```
+    #[must_use]
+    pub const fn cards(&self) -> &'static [&'static str] {
+        self.cards
+    }
+
+    /// Returns the number of cards in this deck.
+    ///
+    /// ```
+    /// let deck = oblique::decks().first().expect("a deck is always compiled in");
+    /// assert!(deck.count() > 0);
+    /// ```
+    #[must_use]
+    pub const fn count(&self) -> usize {
+        self.cards.len()
+    }
+
+    /// Return a randomly-selected card, as a static &str.
+    ///
+    /// ```
+    /// let deck = oblique::decks().first().expect("a deck is always compiled in");
+    /// assert!(!deck.random_str().is_empty());
+    /// ```
+    #[must_use]
+    pub fn random_str(&self) -> &'static str {
+        self.cards[fastrand::usize(..self.cards.len())]
+    }
+
+    /// Return a randomly-selected card.
+    ///
+    /// ```
+    /// let deck = oblique::decks().first().expect("a deck is always compiled in");
+    /// assert!(!deck.random().is_empty());
+    /// ```
+    #[must_use]
+    pub fn random(&self) -> String {
+        self.random_str().to_string()
+    }
+
+    /// Return multiple randomly-selected cards, drawn without replacement.
+    ///
+    /// Returns up to `count` cards. If `count` exceeds the size of the deck,
+    /// returns the whole deck. Each card is drawn at most once.
+    ///
+    /// ```
+    /// let deck = oblique::decks().first().expect("a deck is always compiled in");
+    /// assert!(deck.random_n(3).len() <= 3);
+    /// ```
+    #[must_use]
+    pub fn random_n(&self, count: usize) -> Vec<String> {
+        let count = count.min(self.cards.len());
+        let mut indices = (0..self.cards.len()).collect::<Vec<_>>();
+        fastrand::shuffle(&mut indices);
+        indices
+            .into_iter()
+            .take(count)
+            .map(|i| self.cards[i].to_string())
+            .collect()
+    }
+}
+
+/// Every deck compiled into this build.
+///
+/// # Examples
+///
+/// ```
+/// assert!(!oblique::decks().is_empty());
+/// ```
+#[must_use]
+pub const fn decks() -> &'static [&'static Deck] {
+    &[
+        #[cfg(feature = "oblique")]
+        &decks::oblique::DECK,
+        #[cfg(feature = "examen")]
+        &decks::examen::DECK,
+        #[cfg(feature = "constraints")]
+        &decks::constraints::DECK,
+        #[cfg(feature = "absurd")]
+        &decks::absurd::DECK,
+        #[cfg(feature = "attention")]
+        &decks::attention::DECK,
+        #[cfg(feature = "memento")]
+        &decks::memento::DECK,
+        #[cfg(feature = "dramatis")]
+        &decks::dramatis::DECK,
+        #[cfg(feature = "stuck")]
+        &decks::stuck::DECK,
+    ]
+}
+
+/// Look a deck up by its id.
+///
+/// Returns `None` if no such deck exists, or if it was not compiled into this
+/// build.
+///
+/// # Examples
+///
+/// ```
+/// let first = oblique::decks().first().expect("a deck is always compiled in");
+/// assert_eq!(oblique::deck_by_id(first.id), Some(*first));
+/// assert!(oblique::deck_by_id("no-such-deck").is_none());
+/// ```
+#[must_use]
+pub fn deck_by_id(id: &str) -> Option<&'static Deck> {
+    decks().iter().copied().find(|deck| deck.id == id)
+}
+
+// ---------------------------------------------------------------------------
+// The Oblique Strategies deck, at the top level, as it has always been.
+// ---------------------------------------------------------------------------
 
 /// Return all strategies as a slice of &str. Does not allocate.
 ///
@@ -202,9 +214,10 @@ const CANONICAL_STRATEGIES: &[&str] = &[
 /// let strategies = oblique::strategies_as_slice();
 /// assert!(strategies.contains(&"Honor thy error as a hidden intention"));
 /// ```
+#[cfg(feature = "oblique")]
 #[must_use]
 pub const fn strategies_as_slice() -> &'static [&'static str] {
-    CANONICAL_STRATEGIES
+    decks::oblique::DECK.cards
 }
 
 /// Return all strategies as a vector of strings. Allocates.
@@ -215,6 +228,7 @@ pub const fn strategies_as_slice() -> &'static [&'static str] {
 /// let all_strategies = oblique::strategies();
 /// assert_eq!(all_strategies.len(), oblique::count());
 /// ```
+#[cfg(feature = "oblique")]
 #[must_use]
 pub fn strategies() -> Vec<String> {
     strategies_as_slice().iter().map(|s| s.to_string()).collect()
@@ -228,6 +242,7 @@ pub fn strategies() -> Vec<String> {
 /// let strategy = oblique::random();
 /// assert!(!strategy.is_empty());
 /// ```
+#[cfg(feature = "oblique")]
 #[must_use]
 pub fn random() -> String {
     random_str().to_string()
@@ -239,120 +254,252 @@ pub fn random() -> String {
 /// let strategy = oblique::random_str();
 /// assert!(!strategy.is_empty());
 /// ```
+#[cfg(feature = "oblique")]
 #[must_use]
 pub fn random_str() -> &'static str {
-    let strategies = strategies_as_slice();
-    strategies[fastrand::usize(..strategies.len())]
+    decks::oblique::DECK.random_str()
 }
 
 /// Return multiple randomly-selected strategies, drawn without replacement.
 ///
 /// Returns up to `count` strategies. If `count` exceeds the total number of
 /// strategies, returns all available strategies. Each card is drawn at most
-/// once, but because the deck includes variant wordings from different
-/// editions, two drawn cards may read very similarly.
+/// once. Variant wordings of the same strategy have been collapsed to a single
+/// card, so a multi-card draw returns distinct ideas.
 ///
 /// ```
 /// let strategies = oblique::random_n(3);
 /// assert!(strategies.len() <= 3);
 /// ```
+#[cfg(feature = "oblique")]
 #[must_use]
 pub fn random_n(count: usize) -> Vec<String> {
-    let all = strategies_as_slice();
-    let count = count.min(all.len());
-    let mut indices = (0..all.len()).collect::<Vec<_>>();
-    fastrand::shuffle(&mut indices);
-    indices.into_iter().take(count).map(|i| all[i].to_string()).collect()
+    decks::oblique::DECK.random_n(count)
 }
 
 /// Returns the total number of available strategies.
 ///
 /// ```
 /// let count = oblique::count();
-/// assert!(count >= 176);
+/// assert!(count >= 156);
 /// ```
+#[cfg(feature = "oblique")]
 #[must_use]
 pub const fn count() -> usize {
-    CANONICAL_STRATEGIES.len()
+    decks::oblique::DECK.count()
 }
 
 #[cfg(test)]
 mod tests {
+    use super::Deck;
 
+    pub(super) fn first_lines(deck: &Deck) -> Vec<&'static str> {
+        deck.cards
+            .iter()
+            .map(|card| card.lines().next().unwrap_or(card))
+            .collect()
+    }
+
+    /// The invariants every deck must hold, whatever its content.
+    macro_rules! deck_invariants {
+        ($name:ident, $deck:expr, $expected_count:expr, $max_len:expr) => {
+            mod $name {
+                fn deck() -> &'static crate::Deck {
+                    &$deck
+                }
+
+                #[test]
+                fn has_expected_count() {
+                    assert_eq!(deck().count(), $expected_count);
+                }
+
+                #[test]
+                fn no_empty_entries() {
+                    assert!(deck().cards.iter().all(|s| !s.is_empty()));
+                }
+
+                #[test]
+                fn entries_are_tidy() {
+                    for card in deck().cards {
+                        assert_eq!(
+                            card.trim(),
+                            *card,
+                            "card has leading or trailing whitespace: {card:?}"
+                        );
+                        assert!(
+                            !card.contains("  "),
+                            "card has a run of spaces; use \\n\\t formatting instead: {card:?}"
+                        );
+                        for line in card.lines().skip(1) {
+                            assert!(
+                                line.starts_with('\t'),
+                                "continuation line missing tab indent: {card:?}"
+                            );
+                        }
+                    }
+                }
+
+                #[test]
+                fn no_duplicate_entries() {
+                    let unique: std::collections::HashSet<_> = deck().cards.iter().collect();
+                    assert_eq!(unique.len(), deck().count());
+                }
+
+                #[test]
+                fn sorted_by_first_line() {
+                    // Multi-line cards carry a literal `\n\t`, so sorting the raw
+                    // literal puts them in the wrong place. The deck is ordered by
+                    // what the reader sees, which is the first line.
+                    let keys = crate::tests::first_lines(deck());
+                    let mut sorted = keys.clone();
+                    sorted.sort_unstable();
+                    assert_eq!(keys, sorted, "deck {} is not sorted by first line", deck().id);
+                }
+
+                #[test]
+                fn cards_are_within_max_length() {
+                    // Measured on the escaped literal, so a multi-line card is
+                    // judged the way it appears in the source.
+                    for card in deck().cards {
+                        let escaped = card.replace('\n', "\\n").replace('\t', "\\t");
+                        assert!(
+                            escaped.chars().count() <= $max_len,
+                            "card is longer than {} for this deck: {card:?}",
+                            $max_len
+                        );
+                    }
+                }
+
+                #[test]
+                fn draws_are_in_deck() {
+                    for card in deck().random_n(5) {
+                        assert!(deck().cards.contains(&card.as_str()));
+                    }
+                }
+            }
+        };
+    }
+
+    // The Eno deck's ceiling is set by the "Short circuit" card, which carries
+    // its own worked example. New decks are held to a tighter line.
+    #[cfg(feature = "oblique")]
+    deck_invariants!(oblique, crate::decks::oblique::DECK, 156, 130);
+
+    #[cfg(feature = "examen")]
+    deck_invariants!(examen, crate::decks::examen::DECK, 92, 100);
+
+    #[cfg(feature = "constraints")]
+    deck_invariants!(constraints, crate::decks::constraints::DECK, 100, 120);
+
+    #[cfg(feature = "absurd")]
+    deck_invariants!(absurd, crate::decks::absurd::DECK, 86, 120);
+
+    // The terse deck; the tightest ceiling in the crate is the point of it.
+    #[cfg(feature = "attention")]
+    deck_invariants!(attention, crate::decks::attention::DECK, 93, 60);
+
+    #[cfg(feature = "memento")]
+    deck_invariants!(memento, crate::decks::memento::DECK, 76, 110);
+
+    #[cfg(feature = "dramatis")]
+    deck_invariants!(dramatis, crate::decks::dramatis::DECK, 104, 90);
+
+    #[cfg(feature = "stuck")]
+    deck_invariants!(stuck, crate::decks::stuck::DECK, 90, 80);
+
+    /// The only deck sourced rather than authored, so it is the only one whose
+    /// provenance must carry a credit line.
+    #[cfg(feature = "dramatis")]
+    #[test]
+    fn dramatis_is_attributed() {
+        let deck = crate::decks::dramatis::DECK;
+        assert!(matches!(deck.provenance, crate::Provenance::PublicDomain(_)));
+        assert!(deck.provenance.attribution().is_some());
+    }
+
+    #[test]
+    fn at_least_one_deck() {
+        assert!(!super::decks().is_empty());
+    }
+
+    #[test]
+    fn deck_ids_are_unique() {
+        let ids: std::collections::HashSet<_> = super::decks().iter().map(|d| d.id).collect();
+        assert_eq!(ids.len(), super::decks().len());
+    }
+
+    #[test]
+    fn every_deck_is_reachable_by_id() {
+        for deck in super::decks() {
+            assert_eq!(super::deck_by_id(deck.id), Some(*deck));
+        }
+    }
+
+    #[test]
+    fn unknown_deck_id() {
+        assert_eq!(super::deck_by_id("no-such-deck"), None);
+    }
+
+    #[cfg(feature = "oblique")]
     #[test]
     fn random_strategy() {
         let strategy = super::random();
         assert!(!strategy.is_empty());
     }
 
+    #[cfg(feature = "oblique")]
     #[test]
     fn all_strategies() {
         let list = super::strategies();
         assert_eq!(list.len(), super::count());
     }
 
+    #[cfg(feature = "oblique")]
     #[test]
     fn random_strategy_borrowed() {
         let strategy: &'static str = super::random_str();
         assert!(!strategy.is_empty());
     }
 
+    #[cfg(feature = "oblique")]
     #[test]
     fn all_strategies_borrowed() {
         let list: &'static [&str] = super::strategies_as_slice();
         assert_eq!(list.len(), super::count());
     }
 
+    #[cfg(feature = "oblique")]
     #[test]
     fn random_multiple() {
         let strategies = super::random_n(5);
         assert_eq!(strategies.len(), 5);
     }
 
+    #[cfg(feature = "oblique")]
     #[test]
     fn random_n_exceeds_total() {
         let strategies = super::random_n(1000);
         assert_eq!(strategies.len(), super::count());
     }
 
+    #[cfg(feature = "oblique")]
     #[test]
     fn random_n_zero() {
         let strategies = super::random_n(0);
         assert!(strategies.is_empty());
     }
 
+    #[cfg(feature = "oblique")]
     #[test]
-    fn no_empty_entries() {
-        assert!(super::strategies_as_slice().iter().all(|s| !s.is_empty()));
+    fn count_is_156() {
+        assert_eq!(super::count(), 156);
     }
 
+    #[cfg(feature = "oblique")]
     #[test]
-    fn entries_are_tidy() {
-        for card in super::strategies_as_slice() {
-            assert_eq!(card.trim(), *card, "card has leading or trailing whitespace: {card:?}");
-            assert!(
-                !card.contains("  "),
-                "card has a run of spaces; use \\n\\t formatting instead: {card:?}"
-            );
-            for line in card.lines().skip(1) {
-                assert!(line.starts_with('\t'), "continuation line missing tab indent: {card:?}");
-            }
-        }
-    }
-
-    #[test]
-    fn no_duplicate_entries() {
-        let unique: std::collections::HashSet<_> = super::strategies_as_slice().iter().collect();
-        assert_eq!(unique.len(), super::count());
-    }
-
-    #[test]
-    fn count_strategies() {
-        assert_eq!(super::count(), super::strategies_as_slice().len());
-    }
-
-    #[test]
-    fn count_is_176() {
-        assert_eq!(super::count(), 176);
+    fn top_level_delegates_to_the_oblique_deck() {
+        let deck = super::deck_by_id("oblique").expect("compiled in");
+        assert_eq!(super::strategies_as_slice(), deck.cards());
+        assert_eq!(super::count(), deck.count());
     }
 }

@@ -15,6 +15,21 @@ categories = ["command-line-utilities"]
 name = "oblique"
 path = "src/bin/oblique.rs"
 
+[features]
+default = ["oblique"]
+# One feature per deck. Decks are compile-time constants, so a consumer who
+# enables only the decks they want pays nothing for the rest.
+oblique = []
+examen = []
+constraints = []
+absurd = []
+attention = []
+memento = []
+dramatis = []
+stuck = []
+# Every deck.
+full = ["oblique", "examen", "constraints", "absurd", "attention", "memento", "dramatis", "stuck"]
+
 [dependencies]
 fastrand = "2.4"
 
