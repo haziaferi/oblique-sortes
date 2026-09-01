@@ -1,0 +1,38 @@
+[package]
+name = "oblique"
+version = "0.1.0"
+edition = "2024"
+description = "Brian Eno and Peter Schmidt's Oblique Strategies in a library."
+readme = "README.md"
+license = "ISC"
+authors = ["C J Silverio <ceejceej@gmail.com>"]
+repository = "https://github.com/ceejbot/oblique"
+rust-version = "1.85"
+keywords = ["oblique-strategies", "brian-eno", "creativity", "random"]
+categories = ["command-line-utilities"]
+
+[[bin]]
+name = "oblique"
+path = "src/bin/oblique.rs"
+
+[dependencies]
+fastrand = "2.4"
+
+[lints.rust]
+unsafe_code = { level = "deny", priority = 0 }
+future_incompatible = { level = "deny", priority = 1 }
+rust_2018_idioms = { level = "warn", priority = 2 }
+trivial_casts = { level = "warn", priority = 3 }
+trivial_numeric_casts = { level = "warn", priority = 4 }
+unused_lifetimes = { level = "warn", priority = 5 }
+unused_qualifications = { level = "warn", priority = 6 }
+
+[lints.clippy]
+unwrap_used = "deny"
+
+[profile.release]
+lto = true        # Enable full link-time optimization
+codegen-units = 1 # Single codegen unit for better optimization
+opt-level = 3     # Maximum optimization
+strip = true      # Strip symbols for smaller binary
+panic = "abort"   # Smaller binary, no unwinding
