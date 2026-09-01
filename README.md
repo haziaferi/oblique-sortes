@@ -1,6 +1,21 @@
-# Oblique Strategies
+# Oblique Strategies, and seven more decks
 
-Brian Eno and Peter Schmidt's [Oblique Strategies](https://en.wikipedia.org/wiki/Oblique_Strategies) in a library, for those moments when the work is stuck and a dilemma needs a lateral nudge.
+Brian Eno and Peter Schmidt's [Oblique Strategies](https://en.wikipedia.org/wiki/Oblique_Strategies) in a library, for those moments when the work is stuck and a dilemma needs a lateral nudge — alongside seven other decks for the end of a day, for writing under constraint, for finitude, for attention, and for a problem that will not move.
+
+## Installing
+
+The crate is published as **`oblique-decks`**, because upstream holds `oblique` on crates.io. The library keeps the shorter name, so what you install and what you import differ:
+
+```toml
+[dependencies]
+oblique-decks = "0.2"
+```
+
+```rust
+use oblique::Deck; // not oblique_decks
+```
+
+The binary is `oblique`.
 
 The list is a curated amalgam of the card text from several editions of the deck. Where editions worded the same strategy differently, one wording is kept, so that drawing several cards does not hand you the same idea twice. The deck's two non-instruction cards are kept, as the deck itself has them: the blank white card and Pae White's graphic metacard. Cards that have several lines of text contain embedded newline and tab characters. Print them as-is and they will render the way the card reads:
 
@@ -75,10 +90,14 @@ for deck in oblique::decks() {
 }
 ```
 
+## Credit
+
+Forked from [ceejbot/oblique](https://github.com/ceejbot/oblique) by C J Silverio, which is where the Oblique Strategies deck, the API shape and the release pipeline all come from. Brian Eno and Peter Schmidt are the originators and copyright holders of the Oblique Strategies card text; the `dramatis` deck reproduces public-domain text from Georges Polti, Vladimir Propp and Aristotle. Every other deck was written for this crate. `SPEC.md` records where each one came from and why.
+
 ## See also
 
-[gsv-culture-ships](https://github.com/ceejbot/gsv-culture-ships), this library's structural twin for Iain M. Banks's Culture ship names, another thing I always keep handy for process ping responses.
+[gsv-culture-ships](https://github.com/ceejbot/gsv-culture-ships), the upstream library's structural twin for Iain M. Banks's Culture ship names.
 
 ## LICENSE
 
-[ISC](./LICENSE.md). Go ahead and steal this one, o freeloading megacorps.
+[ISC](./LICENSE.md), as upstream. Go ahead and steal this one, o freeloading megacorps.
