@@ -29,29 +29,42 @@ jobs:
             RUSTC_WRAPPER: "sccache"
         steps:
             - name: checkout
-              uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+              uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
               with:
                 persist-credentials: false
 
             - name: sccache-cache
-              uses: mozilla-actions/sccache-action@9e7fa8a12102821edf02ca5dbea1acd0f89a2696
+              uses: mozilla-actions/sccache-action@9e7fa8a12102821edf02ca5dbea1acd0f89a2696 # v0.0.10
 
             - name: Install Rust toolchain
-              uses: actions-rust-lang/setup-rust-toolchain@46268bd060767258de96ed93c1251119784f2ab6
+              uses: actions-rust-lang/setup-rust-toolchain@166cdcfd11aee3cb47222f9ddb555ce30ddb9659 # v1.17.0
               with:
                   cache-directories: |
                       ~/.cargo/registry
                       ~/.cargo/bin
                       target
 
+            # Pinned and checksummed. `latest` fetched an unverified binary and
+            # ran it on every cache miss, so the version CI tested with could
+            # change without a commit. The digest is the one published beside
+            # the release; bump the two together.
             - name: Install cargo-nextest
               shell: bash
+              env:
+                  NEXTEST_VERSION: "0.9.143"
+                  NEXTEST_SHA256: "66786b9abe23920d022a182d1416b1bbc8130dd4872a9553d76985a1708dcd1e"
               run: |
-                  if [[ -z $(which cargo-nextest) ]]; then
-                    curl -sL https://get.nexte.st/latest/linux -o nextest.tgz
-                    tar xfz nextest.tgz
-                    mv cargo-nextest /home/runner/.cargo/bin
+                  set -euo pipefail
+                  if command -v cargo-nextest >/dev/null 2>&1; then
+                      echo "cargo-nextest is already installed; leaving it alone"
+                      exit 0
                   fi
+                  base="https://github.com/nextest-rs/nextest/releases/download/cargo-nextest-$NEXTEST_VERSION"
+                  archive="cargo-nextest-$NEXTEST_VERSION-x86_64-unknown-linux-gnu.tar.gz"
+                  curl -sSfL -o nextest.tgz "$base/$archive"
+                  echo "$NEXTEST_SHA256  nextest.tgz" | sha256sum -c -
+                  tar xzf nextest.tgz
+                  mv cargo-nextest "$HOME/.cargo/bin/"
 
             - name: run the tests
               run: cargo nextest run --locked --all-targets --all-features --future-incompat-report
@@ -76,12 +89,12 @@ jobs:
         runs-on: ubuntu-latest
         steps:
             - name: checkout
-              uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+              uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
               with:
                 persist-credentials: false
 
             - name: Install Rust toolchain
-              uses: actions-rust-lang/setup-rust-toolchain@46268bd060767258de96ed93c1251119784f2ab6
+              uses: actions-rust-lang/setup-rust-toolchain@166cdcfd11aee3cb47222f9ddb555ce30ddb9659 # v1.17.0
 
             # `--all-features` is not enough on its own: the top-level Oblique
             # functions and the voice tests are feature-gated, so a deck that
@@ -116,12 +129,12 @@ jobs:
         runs-on: ubuntu-latest
         steps:
             - name: checkout
-              uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+              uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
               with:
                 persist-credentials: false
 
             - name: Install nightly Rust
-              uses: actions-rust-lang/setup-rust-toolchain@46268bd060767258de96ed93c1251119784f2ab6
+              uses: actions-rust-lang/setup-rust-toolchain@166cdcfd11aee3cb47222f9ddb555ce30ddb9659 # v1.17.0
               with:
                   toolchain: nightly
                   components: rustfmt
