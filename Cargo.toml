@@ -1,7 +1,8 @@
 [package]
-# Published as `oblique-sortes`; upstream holds `oblique` on crates.io. The
-# library and binary take the shorter `sortes`, after the sortes Vergilianae:
-# opening a book at random for guidance, which is what this does.
+# Not published to crates.io; installed from git. The package is named
+# `oblique-sortes` rather than `oblique` because upstream holds that name, and
+# the library and binary take the shorter `sortes`, after the sortes
+# Vergilianae: opening a book at random for guidance, which is what this does.
 name = "oblique-sortes"
 version = "0.2.0"
 edition = "2024"

@@ -6,16 +6,24 @@ Named for the *sortes Vergilianae*, the practice of opening Virgil at random and
 
 ## Installing
 
+Not on crates.io — install from git.
+
 ```toml
 [dependencies]
-oblique-sortes = "0.2"
+oblique-sortes = { git = "https://github.com/haziaferi/oblique-sortes" }
 ```
 
 ```rust
 use sortes::Deck; // the library is `sortes`, not `oblique_sortes`
 ```
 
-The binary is `sortes`. The package is `oblique-sortes` because upstream holds `oblique` on crates.io.
+For the command-line tool:
+
+```bash
+cargo install --git https://github.com/haziaferi/oblique-sortes
+```
+
+The binary is `sortes`. The package is called `oblique-sortes` because upstream holds `oblique` on crates.io.
 
 The list is a curated amalgam of the card text from several editions of the deck. Where editions worded the same strategy differently, one wording is kept, so that drawing several cards does not hand you the same idea twice. The deck's two non-instruction cards are kept, as the deck itself has them: the blank white card and Pae White's graphic metacard. Cards that have several lines of text contain embedded newline and tab characters. Print them as-is and they will render the way the card reads:
 

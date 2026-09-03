@@ -35,6 +35,3 @@ version BUMP:
     git tag "v${version}"
     echo "Release tagged for version v${version}"
 
-# Publish to crates.io.
-release:
-    cargo publish
