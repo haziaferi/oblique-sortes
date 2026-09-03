@@ -8,6 +8,7 @@ description = "Eight decks of cards for when the work is stuck: Oblique Strategi
 readme = "README.md"
 license = "ISC"
 authors = ["feridottir <feridottir@proton.me>"]
+repository = "https://github.com/haziaferi/oblique"
 rust-version = "1.85"
 keywords = ["oblique-strategies", "creativity", "prompts", "cards", "random"]
 categories = ["command-line-utilities"]
