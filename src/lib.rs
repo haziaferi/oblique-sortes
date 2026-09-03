@@ -92,6 +92,8 @@ pub struct Deck {
 impl Deck {
     /// Return this deck's cards as a slice of &str. Does not allocate.
     ///
+    /// # Examples
+    ///
     /// ```
     /// let deck = sortes::decks().first().expect("a deck is always compiled in");
     /// assert_eq!(deck.cards().len(), deck.count());
@@ -102,6 +104,8 @@ impl Deck {
     }
 
     /// Returns the number of cards in this deck.
+    ///
+    /// # Examples
     ///
     /// ```
     /// let deck = sortes::decks().first().expect("a deck is always compiled in");
@@ -114,6 +118,8 @@ impl Deck {
 
     /// Return a randomly-selected card, as a static &str.
     ///
+    /// # Examples
+    ///
     /// ```
     /// let deck = sortes::decks().first().expect("a deck is always compiled in");
     /// assert!(!deck.random_str().is_empty());
@@ -125,6 +131,8 @@ impl Deck {
 
     /// Return a randomly-selected card.
     ///
+    /// # Examples
+    ///
     /// ```
     /// let deck = sortes::decks().first().expect("a deck is always compiled in");
     /// assert!(!deck.random().is_empty());
@@ -134,10 +142,32 @@ impl Deck {
         self.random_str().to_string()
     }
 
+    /// Return multiple randomly-selected cards, drawn without replacement, as
+    /// static &str. Makes one deck-sized allocation and no `String` per card.
+    ///
+    /// Returns up to `count` cards. If `count` exceeds the size of the deck,
+    /// returns the whole deck. Each card is drawn at most once.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// let deck = sortes::decks().first().expect("a deck is always compiled in");
+    /// assert!(deck.random_n_str(3).len() <= 3);
+    /// ```
+    #[must_use]
+    pub fn random_n_str(&self, count: usize) -> Vec<&'static str> {
+        let mut drawn = self.cards.to_vec();
+        fastrand::shuffle(&mut drawn);
+        drawn.truncate(count);
+        drawn
+    }
+
     /// Return multiple randomly-selected cards, drawn without replacement.
     ///
     /// Returns up to `count` cards. If `count` exceeds the size of the deck,
     /// returns the whole deck. Each card is drawn at most once.
+    ///
+    /// # Examples
     ///
     /// ```
     /// let deck = sortes::decks().first().expect("a deck is always compiled in");
@@ -145,14 +175,7 @@ impl Deck {
     /// ```
     #[must_use]
     pub fn random_n(&self, count: usize) -> Vec<String> {
-        let count = count.min(self.cards.len());
-        let mut indices = (0..self.cards.len()).collect::<Vec<_>>();
-        fastrand::shuffle(&mut indices);
-        indices
-            .into_iter()
-            .take(count)
-            .map(|i| self.cards[i].to_string())
-            .collect()
+        self.random_n_str(count).into_iter().map(str::to_string).collect()
     }
 }
 
@@ -250,6 +273,8 @@ pub fn random() -> String {
 
 /// Return a randomly-selected strategy, as a static &str.
 ///
+/// # Examples
+///
 /// ```
 /// let strategy = sortes::random_str();
 /// assert!(!strategy.is_empty());
@@ -267,6 +292,8 @@ pub fn random_str() -> &'static str {
 /// once. Variant wordings of the same strategy have been collapsed to a single
 /// card, so a multi-card draw returns distinct ideas.
 ///
+/// # Examples
+///
 /// ```
 /// let strategies = sortes::random_n(3);
 /// assert!(strategies.len() <= 3);
@@ -277,7 +304,26 @@ pub fn random_n(count: usize) -> Vec<String> {
     decks::oblique::DECK.random_n(count)
 }
 
+/// Return multiple randomly-selected strategies, drawn without replacement, as
+/// static &str. Makes one deck-sized allocation and no `String` per strategy.
+///
+/// Behaves as [`random_n()`] otherwise.
+///
+/// # Examples
+///
+/// ```
+/// let strategies = sortes::random_n_str(3);
+/// assert!(strategies.len() <= 3);
+/// ```
+#[cfg(feature = "oblique")]
+#[must_use]
+pub fn random_n_str(count: usize) -> Vec<&'static str> {
+    decks::oblique::DECK.random_n_str(count)
+}
+
 /// Returns the total number of available strategies.
+///
+/// # Examples
 ///
 /// ```
 /// let count = sortes::count();
@@ -293,7 +339,7 @@ pub const fn count() -> usize {
 mod tests {
     use super::Deck;
 
-    pub(super) fn first_lines(deck: &Deck) -> Vec<&'static str> {
+    pub(crate) fn first_lines(deck: &Deck) -> Vec<&'static str> {
         deck.cards
             .iter()
             .map(|card| card.lines().next().unwrap_or(card))
@@ -375,6 +421,13 @@ mod tests {
                     for card in deck().random_n(5) {
                         assert!(deck().cards.contains(&card.as_str()));
                     }
+                }
+
+                #[test]
+                fn draws_are_without_replacement() {
+                    let drawn = deck().random_n_str(5);
+                    let unique: std::collections::HashSet<_> = drawn.iter().collect();
+                    assert_eq!(unique.len(), drawn.len(), "a card was drawn twice: {drawn:?}");
                 }
             }
         };
@@ -553,6 +606,19 @@ mod tests {
     fn random_n_zero() {
         let strategies = super::random_n(0);
         assert!(strategies.is_empty());
+    }
+
+    /// The borrowed twin draws under the same rules as the owned one.
+    #[cfg(feature = "oblique")]
+    #[test]
+    fn random_multiple_borrowed() {
+        let strategies: Vec<&'static str> = super::random_n_str(5);
+        assert_eq!(strategies.len(), 5);
+        assert_eq!(super::random_n_str(1000).len(), super::count());
+        assert!(super::random_n_str(0).is_empty());
+        for strategy in super::random_n_str(5) {
+            assert!(super::strategies_as_slice().contains(&strategy));
+        }
     }
 
     #[cfg(feature = "oblique")]

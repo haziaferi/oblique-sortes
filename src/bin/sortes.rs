@@ -117,7 +117,7 @@ fn run(command: Command) -> Result<(), String> {
         Command::Draw { deck, count } => {
             let deck = resolve(deck.as_deref())?;
             // Printed as-is: a card carrying `\n\t` renders the way it reads.
-            for card in deck.random_n(count) {
+            for card in deck.random_n_str(count) {
                 println!("{card}");
             }
         }
