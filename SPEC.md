@@ -1,18 +1,25 @@
-# SPEC: multi-deck expansion of `oblique`
+# SPEC: oblique-sortes
 
 Status: **Complete. Parts 1–3 applied, all eight decks built (797 cards), and the CLI
 shipped.** What remains is listed under *Still open* at the end, and is deferred by choice
 rather than unfinished.
 
+**A note on names.** This document was written against the crate as received, which was called
+`oblique`. It now ships as the package **`oblique-sortes`**, with the library and binary both
+named **`sortes`** — upstream holds `oblique` on crates.io, and the name over-claimed anyway,
+since only 156 of 797 cards are Oblique Strategies. Where `oblique` still appears below it means
+one of three other things, none of which moved: the deck id, the Cargo feature that compiles
+that deck in, or the `decks::oblique` module.
+
 ## Context
 
-`oblique` is a Rust library crate plus a three-line CLI. Its entire content is one compile-time
-constant — `CANONICAL_STRATEGIES: &[&str]` in `src/lib.rs` — holding the Oblique Strategies deck
-amalgamated from several editions of Eno and Schmidt's cards. Six `#[must_use]` functions wrap
-it: `strategies_as_slice()`, `strategies()`, `random()`, `random_str()`, `random_n(n)`,
-`count()`. One dependency (`fastrand`). No UI, no persistence, no config, no grouping, no card
-identity, no i18n. A production-grade release pipeline is already attached
-(`.github/workflows/release.yml`).
+The starting point was ceejbot's `oblique`, a Rust library crate plus a three-line CLI. Its
+entire content was one compile-time constant — `CANONICAL_STRATEGIES: &[&str]` in `src/lib.rs` —
+holding the Oblique Strategies deck amalgamated from several editions of Eno and Schmidt's
+cards. Six `#[must_use]` functions wrapped it: `strategies_as_slice()`, `strategies()`,
+`random()`, `random_str()`, `random_n(n)`, `count()`. One dependency (`fastrand`). No UI, no
+persistence, no config, no grouping, no card identity, no i18n. A production-grade release
+pipeline was already attached (`.github/workflows/release.yml`).
 
 The goal is to make it a **multi-deck library of the same shape**: several standalone themed
 decks, each selectable in parallel with the Eno deck and drawn by the identical random
@@ -224,9 +231,10 @@ failure.
 could not actually be exercised. Adding `examen` made it testable, and it failed three ways —
 all now fixed:
 
-1. `src/bin/oblique.rs` and `examples/random-strategy.rs` called the feature-gated top-level
-   functions, so neither compiled without `oblique`. Both now draw from `decks().first()`, which
-   is `oblique` whenever it is enabled, so the default build is unchanged.
+1. `src/bin/sortes.rs` (named `oblique.rs` at the time) and `examples/random-strategy.rs`
+   called the feature-gated top-level functions, so neither compiled without `oblique`. Both
+   now draw from `decks().first()`, which is `oblique` whenever it is enabled, so the default
+   build is unchanged.
 2. Nine tests exercising the top-level functions needed `#[cfg(feature = "oblique")]`.
 3. Eight doctests hardcoded `deck_by_id("oblique").expect(...)` and panicked in an examen-only
    build. Doctests cannot be feature-gated, so they are now deck-agnostic — the only form true
@@ -262,9 +270,9 @@ Hand-rolled `std::env::args()` parsing, **no new dependency** — `clap` would u
 tiny-binary profile (`lto`, `codegen-units = 1`, `strip`, `panic = "abort"`).
 
 ```
-sortes                   # random card from the default deck
-sortes examen            # random card from a named deck
-sortes examen -n 3       # three, without replacement, either order
+sortes                  # random card from the default deck
+sortes examen           # random card from a named deck
+sortes examen -n 3      # three, without replacement, either order
 sortes --list           # deck ids, card counts, names; * marks the default
 sortes --about examen   # blurb, count, and where the text came from
 sortes --help           # the grammar
@@ -273,9 +281,10 @@ sortes --version
 
 Shipped as sketched, plus `--help`/`--version` and `-l`/`-n`/`--count` aliases. The default
 deck is `decks().first()`, not a hardcoded `oblique`, so the binary works under any feature
-set — an `examen`-only build lists and draws `examen`, and `oblique examen ... oblique` there
-fails with `no deck called oblique. Built in: examen`. Usage errors and unknown decks exit 1;
-the unknown-deck message names the decks that *are* compiled in.
+set: an `examen`-only build lists and draws `examen`, and asking that build for a deck it does
+not have — `sortes oblique` — fails with `no deck called oblique. Built in: examen`. Usage
+errors and unknown decks exit 1; the unknown-deck message names the decks that *are* compiled
+in.
 
 Preserve `println!` of the raw string so the `\n\t` convention keeps rendering for free.
 
@@ -286,11 +295,14 @@ Preserve `println!` of the raw string so the `\n\t` convention keeps rendering f
 - ✅ `src/decks/mod.rs` — registry and `#[cfg]` wiring.
 - ✅ `src/decks/oblique.rs` — the curated 156, moved verbatim (extracted mechanically, not
   retyped).
-- ✅ `Cargo.toml` — `[features]`.
-- ☐ `src/decks/{examen,absurd,constraints,dramatis,attention,memento,stuck}.rs` — new.
-- ☐ `src/bin/oblique.rs` — arg parsing. Still the original one-liner.
-- ☐ `README.md` — deck table, per-deck attribution, provenance policy. Currently carries only a
-  short note that decks are feature-gated.
+- ✅ `Cargo.toml` — `[features]`, plus the rename: package `oblique-sortes`, `[lib]` and
+  `[[bin]]` both `sortes`.
+- ✅ `src/decks/{examen,absurd,constraints,dramatis,attention,memento,stuck}.rs` — all seven
+  built.
+- ✅ `src/bin/sortes.rs` — argument parsing, hand-rolled. Renamed from `src/bin/oblique.rs`.
+- ✅ `README.md` — deck table, per-deck attribution, provenance policy, install instructions.
+- ✅ `.github/workflows/release.yml` — `BINARY_NAME` follows `[[bin]]`, since that is what the
+  pipeline uploads and hands to the Homebrew tap.
 
 ---
 
