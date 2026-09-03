@@ -4,8 +4,10 @@ on:
         branches: ["latest"]
         paths:
             - src/**
+            - examples/**
             - Cargo.toml
             - Cargo.lock
+            - .rustfmt.toml
             - .github/workflows/test.yml
     pull_request:
         branches: ["latest"]
@@ -15,13 +17,16 @@ permissions:
 
 env:
     CARGO_TERM_COLOR: always
-    SCCACHE_GHA_ENABLED: "true"
-    RUSTC_WRAPPER: "sccache"
 
 jobs:
     test:
         name: test
         runs-on: ubuntu-latest
+        # sccache is scoped to this job: it is the only one that compiles, and
+        # it is the only one that installs the wrapper.
+        env:
+            SCCACHE_GHA_ENABLED: "true"
+            RUSTC_WRAPPER: "sccache"
         steps:
             - name: checkout
               uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
@@ -49,10 +54,62 @@ jobs:
                   fi
 
             - name: run the tests
-              run: cargo nextest run --all-targets --all-features --future-incompat-report
+              run: cargo nextest run --locked --all-targets --all-features --future-incompat-report
+
+            # nextest does not run doctests, and every public item in this
+            # crate carries one. Without this step a broken example ships green.
+            - name: run the doctests
+              run: cargo test --locked --doc --all-features
 
             - name: consult Clippy
-              run: cargo clippy --all-targets --all-features
+              run: cargo clippy --locked --all-targets --all-features -- -D warnings
+
+            # Catches ambiguous and broken intra-doc links, which neither the
+            # tests nor Clippy see.
+            - name: build the docs
+              env:
+                  RUSTDOCFLAGS: "-D warnings"
+              run: cargo doc --locked --no-deps --all-features
+
+    features:
+        name: feature matrix
+        runs-on: ubuntu-latest
+        steps:
+            - name: checkout
+              uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+              with:
+                persist-credentials: false
+
+            - name: Install Rust toolchain
+              uses: actions-rust-lang/setup-rust-toolchain@46268bd060767258de96ed93c1251119784f2ab6
+
+            # `--all-features` is not enough on its own: the top-level Oblique
+            # functions and the voice tests are feature-gated, so a deck that
+            # only compiles alongside its neighbours would pass the test job.
+            # One runner over all eight is cheaper than eight matrix jobs and
+            # reuses the same warm target directory.
+            - name: every deck builds alone
+              shell: bash
+              env:
+                  RUSTFLAGS: "-D warnings"
+              run: |
+                  for deck in oblique examen constraints absurd attention memento dramatis stuck; do
+                      echo "::group::$deck"
+                      cargo check --locked --no-default-features --features "$deck" --all-targets
+                      echo "::endgroup::"
+                  done
+
+            # The crate promises this failure by name; see the `compile_error!`
+            # at the crate root.
+            - name: a build with no deck fails, and says why
+              shell: bash
+              run: |
+                  if cargo check --locked --no-default-features 2>build.log; then
+                      echo "a featureless build succeeded; it must not" >&2
+                      exit 1
+                  fi
+                  cat build.log
+                  grep -q "at least one deck feature must be enabled" build.log
 
     fmt:
         name: formatting check

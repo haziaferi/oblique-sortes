@@ -372,15 +372,16 @@ Preserve `println!` of the raw string so the `\n\t` convention keeps rendering f
 ## Verification
 
 ```bash
-cargo nextest run --all-targets --all-features --future-incompat-report
+cargo nextest run --locked --all-targets --all-features --future-incompat-report
 ```
 
 - `cargo clippy --all-targets --all-features -- -D warnings` — note `clippy::unwrap_used` is
   `deny` at the crate level.
 - `cargo +nightly fmt --check --all` — CI runs nightly rustfmt against `.rustfmt.toml`.
-- `cargo test --doc`.
-- Feature-matrix build: `cargo build --no-default-features --features examen`; and
-  `--no-default-features` alone must fail cleanly or default sensibly.
+- `cargo test --doc` — a separate CI step, because nextest does not run doctests.
+- Feature-matrix build: each deck alone under `--no-default-features --features <deck>`, and
+  `--no-default-features` alone must fail with the `compile_error!` message. Both are a CI job
+  and a `just features` recipe.
 - Backwards compatibility: the existing doctests on `random()`, `strategies()`, `count()` must
   pass **unmodified** — that is the proof the refactor is non-breaking.
 - CLI smoke: `cargo run --bin sortes -- --list`, then one draw per deck, checking multi-line

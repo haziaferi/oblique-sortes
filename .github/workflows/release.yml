@@ -111,8 +111,11 @@ jobs:
                   toolchain: stable
                   target: ${{ matrix.target }}
 
+            # `--locked`: the committed Cargo.lock is the released build's
+            # bill of materials. Without it CI is free to resolve a version
+            # nobody reviewed, and the release stops being reproducible.
             - name: build
-              run: cargo build --release --target ${{ matrix.target }}
+              run: cargo build --locked --release --target ${{ matrix.target }}
 
             - name: package and upload
               env:
