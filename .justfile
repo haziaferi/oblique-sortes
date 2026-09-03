@@ -20,7 +20,7 @@ fmt:
 # Install required tools
 setup:
     brew tap ceejbot/tap
-    brew install fzf tomato semver-bump cargo-nextest
+    brew install tomato semver-bump cargo-nextest
     rustup install nightly
 
 # Tag a new version for release.
