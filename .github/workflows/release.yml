@@ -36,7 +36,7 @@ concurrency:
 
 env:
     CARGO_TERM_COLOR: always
-    BINARY_NAME: oblique # <-- the only per-crate change
+    BINARY_NAME: sortes # <-- the only per-crate change
 
 defaults:
     run:

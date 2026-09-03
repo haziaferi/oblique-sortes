@@ -1,25 +1,26 @@
 [package]
-# Published as `oblique-decks`; upstream holds `oblique` on crates.io. The
-# library keeps the shorter name below, so callers still write `oblique::`.
-name = "oblique-decks"
+# Published as `oblique-sortes`; upstream holds `oblique` on crates.io. The
+# library and binary take the shorter `sortes`, after the sortes Vergilianae:
+# opening a book at random for guidance, which is what this does.
+name = "oblique-sortes"
 version = "0.2.0"
 edition = "2024"
 description = "Eight decks of cards for when the work is stuck: Oblique Strategies and seven more."
 readme = "README.md"
 license = "ISC"
 authors = ["feridottir <feridottir@proton.me>"]
-repository = "https://github.com/haziaferi/oblique"
+repository = "https://github.com/haziaferi/oblique-sortes"
 rust-version = "1.85"
 keywords = ["oblique-strategies", "creativity", "prompts", "cards", "random"]
 categories = ["command-line-utilities"]
 
 [lib]
-name = "oblique"
+name = "sortes"
 path = "src/lib.rs"
 
 [[bin]]
-name = "oblique"
-path = "src/bin/oblique.rs"
+name = "sortes"
+path = "src/bin/sortes.rs"
 
 [features]
 default = ["oblique"]

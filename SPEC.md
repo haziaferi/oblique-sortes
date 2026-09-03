@@ -262,13 +262,13 @@ Hand-rolled `std::env::args()` parsing, **no new dependency** — `clap` would u
 tiny-binary profile (`lto`, `codegen-units = 1`, `strip`, `panic = "abort"`).
 
 ```
-oblique                  # random card from the default deck
-oblique examen           # random card from a named deck
-oblique examen -n 3      # three, without replacement, either order
-oblique --list           # deck ids, card counts, names; * marks the default
-oblique --about examen   # blurb, count, and where the text came from
-oblique --help           # the grammar
-oblique --version
+sortes                   # random card from the default deck
+sortes examen            # random card from a named deck
+sortes examen -n 3       # three, without replacement, either order
+sortes --list           # deck ids, card counts, names; * marks the default
+sortes --about examen   # blurb, count, and where the text came from
+sortes --help           # the grammar
+sortes --version
 ```
 
 Shipped as sketched, plus `--help`/`--version` and `-l`/`-n`/`--count` aliases. The default
@@ -364,7 +364,7 @@ cargo nextest run --all-targets --all-features --future-incompat-report
   `--no-default-features` alone must fail cleanly or default sensibly.
 - Backwards compatibility: the existing doctests on `random()`, `strategies()`, `count()` must
   pass **unmodified** — that is the proof the refactor is non-breaking.
-- CLI smoke: `cargo run --bin oblique -- --list`, then one draw per deck, checking multi-line
+- CLI smoke: `cargo run --bin sortes -- --list`, then one draw per deck, checking multi-line
   cards still render with their tab indentation.
 
 ## Open questions

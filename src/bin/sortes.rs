@@ -1,4 +1,4 @@
-//! The `oblique` command line.
+//! The `sortes` command line.
 //!
 //! Argument parsing is hand-rolled against `std::env::args()`. A parser crate
 //! would be more comfortable and would undo the release profile this crate is
@@ -7,15 +7,15 @@
 
 use std::process::ExitCode;
 
-use oblique::{Deck, Provenance};
+use sortes::{Deck, Provenance};
 
 const USAGE: &str = "\
-oblique - decks of cards for when the work will not move
+sortes - decks of cards for when the work will not move
 
 Usage:
-    oblique [DECK] [-n COUNT]
-    oblique --list
-    oblique --about [DECK]
+    sortes [DECK] [-n COUNT]
+    sortes --list
+    sortes --about [DECK]
 
 Arguments:
     DECK             Deck to draw from. Defaults to the first one built in.
@@ -43,7 +43,7 @@ fn main() -> ExitCode {
     let command = match parsed {
         Ok(command) => command,
         Err(message) => {
-            eprintln!("oblique: {message}\n\n{USAGE}");
+            eprintln!("sortes: {message}\n\n{USAGE}");
             return ExitCode::FAILURE;
         }
     };
@@ -51,7 +51,7 @@ fn main() -> ExitCode {
     match run(command) {
         Ok(()) => ExitCode::SUCCESS,
         Err(message) => {
-            eprintln!("oblique: {message}");
+            eprintln!("sortes: {message}");
             ExitCode::FAILURE
         }
     }
@@ -111,7 +111,7 @@ fn parse<I: IntoIterator<Item = String>>(args: I) -> Result<Command, String> {
 fn run(command: Command) -> Result<(), String> {
     match command {
         Command::Help => print!("{USAGE}"),
-        Command::Version => println!("oblique {}", env!("CARGO_PKG_VERSION")),
+        Command::Version => println!("sortes {}", env!("CARGO_PKG_VERSION")),
         Command::List => list_decks(),
         Command::About { deck } => describe(resolve(deck.as_deref())?),
         Command::Draw { deck, count } => {
@@ -128,11 +128,11 @@ fn run(command: Command) -> Result<(), String> {
 /// Find a deck by id, or fall back to the first one compiled in.
 fn resolve(id: Option<&str>) -> Result<&'static Deck, String> {
     match id {
-        Some(id) => oblique::deck_by_id(id).ok_or_else(|| {
-            let built_in: Vec<&str> = oblique::decks().iter().map(|deck| deck.id).collect();
+        Some(id) => sortes::deck_by_id(id).ok_or_else(|| {
+            let built_in: Vec<&str> = sortes::decks().iter().map(|deck| deck.id).collect();
             format!("no deck called {id}. Built in: {}", built_in.join(", "))
         }),
-        None => oblique::decks()
+        None => sortes::decks()
             .first()
             .copied()
             .ok_or_else(|| "no decks are built into this binary".to_string()),
@@ -140,7 +140,7 @@ fn resolve(id: Option<&str>) -> Result<&'static Deck, String> {
 }
 
 fn list_decks() {
-    let decks = oblique::decks();
+    let decks = sortes::decks();
     let width = decks.iter().map(|deck| deck.id.len()).max().unwrap_or(0);
     for (index, deck) in decks.iter().enumerate() {
         let marker = if index == 0 { '*' } else { ' ' };

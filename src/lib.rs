@@ -16,7 +16,7 @@
 //! # Examples
 //!
 //! ```
-//! let deck = oblique::decks().first().expect("a deck is always compiled in");
+//! let deck = sortes::decks().first().expect("a deck is always compiled in");
 //! println!("The next move: {}", deck.random());
 //! ```
 
@@ -54,7 +54,7 @@ impl Provenance {
     /// # Examples
     ///
     /// ```
-    /// use oblique::Provenance;
+    /// use sortes::Provenance;
     /// assert_eq!(Provenance::Original.attribution(), None);
     /// assert!(Provenance::Attributed("Eno").attribution().is_some());
     /// ```
@@ -72,7 +72,7 @@ impl Provenance {
 /// # Examples
 ///
 /// ```
-/// let deck = oblique::decks().first().expect("a deck is always compiled in");
+/// let deck = sortes::decks().first().expect("a deck is always compiled in");
 /// assert!(!deck.random().is_empty());
 /// ```
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -93,7 +93,7 @@ impl Deck {
     /// Return this deck's cards as a slice of &str. Does not allocate.
     ///
     /// ```
-    /// let deck = oblique::decks().first().expect("a deck is always compiled in");
+    /// let deck = sortes::decks().first().expect("a deck is always compiled in");
     /// assert_eq!(deck.cards().len(), deck.count());
     /// ```
     #[must_use]
@@ -104,7 +104,7 @@ impl Deck {
     /// Returns the number of cards in this deck.
     ///
     /// ```
-    /// let deck = oblique::decks().first().expect("a deck is always compiled in");
+    /// let deck = sortes::decks().first().expect("a deck is always compiled in");
     /// assert!(deck.count() > 0);
     /// ```
     #[must_use]
@@ -115,7 +115,7 @@ impl Deck {
     /// Return a randomly-selected card, as a static &str.
     ///
     /// ```
-    /// let deck = oblique::decks().first().expect("a deck is always compiled in");
+    /// let deck = sortes::decks().first().expect("a deck is always compiled in");
     /// assert!(!deck.random_str().is_empty());
     /// ```
     #[must_use]
@@ -126,7 +126,7 @@ impl Deck {
     /// Return a randomly-selected card.
     ///
     /// ```
-    /// let deck = oblique::decks().first().expect("a deck is always compiled in");
+    /// let deck = sortes::decks().first().expect("a deck is always compiled in");
     /// assert!(!deck.random().is_empty());
     /// ```
     #[must_use]
@@ -140,7 +140,7 @@ impl Deck {
     /// returns the whole deck. Each card is drawn at most once.
     ///
     /// ```
-    /// let deck = oblique::decks().first().expect("a deck is always compiled in");
+    /// let deck = sortes::decks().first().expect("a deck is always compiled in");
     /// assert!(deck.random_n(3).len() <= 3);
     /// ```
     #[must_use]
@@ -161,7 +161,7 @@ impl Deck {
 /// # Examples
 ///
 /// ```
-/// assert!(!oblique::decks().is_empty());
+/// assert!(!sortes::decks().is_empty());
 /// ```
 #[must_use]
 pub const fn decks() -> &'static [&'static Deck] {
@@ -193,9 +193,9 @@ pub const fn decks() -> &'static [&'static Deck] {
 /// # Examples
 ///
 /// ```
-/// let first = oblique::decks().first().expect("a deck is always compiled in");
-/// assert_eq!(oblique::deck_by_id(first.id), Some(*first));
-/// assert!(oblique::deck_by_id("no-such-deck").is_none());
+/// let first = sortes::decks().first().expect("a deck is always compiled in");
+/// assert_eq!(sortes::deck_by_id(first.id), Some(*first));
+/// assert!(sortes::deck_by_id("no-such-deck").is_none());
 /// ```
 #[must_use]
 pub fn deck_by_id(id: &str) -> Option<&'static Deck> {
@@ -211,7 +211,7 @@ pub fn deck_by_id(id: &str) -> Option<&'static Deck> {
 /// # Examples
 ///
 /// ```
-/// let strategies = oblique::strategies_as_slice();
+/// let strategies = sortes::strategies_as_slice();
 /// assert!(strategies.contains(&"Honor thy error as a hidden intention"));
 /// ```
 #[cfg(feature = "oblique")]
@@ -225,8 +225,8 @@ pub const fn strategies_as_slice() -> &'static [&'static str] {
 /// # Examples
 ///
 /// ```
-/// let all_strategies = oblique::strategies();
-/// assert_eq!(all_strategies.len(), oblique::count());
+/// let all_strategies = sortes::strategies();
+/// assert_eq!(all_strategies.len(), sortes::count());
 /// ```
 #[cfg(feature = "oblique")]
 #[must_use]
@@ -239,7 +239,7 @@ pub fn strategies() -> Vec<String> {
 /// # Examples
 ///
 /// ```
-/// let strategy = oblique::random();
+/// let strategy = sortes::random();
 /// assert!(!strategy.is_empty());
 /// ```
 #[cfg(feature = "oblique")]
@@ -251,7 +251,7 @@ pub fn random() -> String {
 /// Return a randomly-selected strategy, as a static &str.
 ///
 /// ```
-/// let strategy = oblique::random_str();
+/// let strategy = sortes::random_str();
 /// assert!(!strategy.is_empty());
 /// ```
 #[cfg(feature = "oblique")]
@@ -268,7 +268,7 @@ pub fn random_str() -> &'static str {
 /// card, so a multi-card draw returns distinct ideas.
 ///
 /// ```
-/// let strategies = oblique::random_n(3);
+/// let strategies = sortes::random_n(3);
 /// assert!(strategies.len() <= 3);
 /// ```
 #[cfg(feature = "oblique")]
@@ -280,7 +280,7 @@ pub fn random_n(count: usize) -> Vec<String> {
 /// Returns the total number of available strategies.
 ///
 /// ```
-/// let count = oblique::count();
+/// let count = sortes::count();
 /// assert!(count >= 156);
 /// ```
 #[cfg(feature = "oblique")]
