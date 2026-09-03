@@ -264,6 +264,13 @@ applied to every deck — `no_empty_entries`, `entries_are_tidy` (the tab conven
 deck; per-deck max-length and orthography checks. Every public item carries a doctest today; new
 ones must too.
 
+A deck's voice rules belong in the tests, not only in its module doc. Where a rule is
+machine-checkable it is checked: `attention` addresses no reader and asks nothing, `memento`
+never asks, and `dramatis` cards stay labels — no terminal punctuation, no questions, no second
+person. The rules that are not checkable (`memento` opening on an imperative, `stuck` asking or
+instructing, `absurd` avoiding a borrowed phrasing) are named in the docs as editorial, so no
+comment claims an enforcement that does not exist.
+
 ### CLI
 
 Hand-rolled `std::env::args()` parsing, **no new dependency** — `clap` would undo the tuned
@@ -381,11 +388,9 @@ cargo nextest run --all-targets --all-features --future-incompat-report
 
 ## Open questions
 
-- **Deck slate** — eight is a proposal, not a commitment. Which are worth building?
-- **Provenance mode per deck** — the table recommends one each; `absurd` and `stuck` are
-  original-authorship-heavy and therefore the slowest to produce.
-- **"Give the name away"** — restore if confirmed in a physical edition.
-- **"Idiot glee (?)"** — drop the editorial `(?)` or keep it.
+All answered. The deck slate settled at the eight below, each with the provenance the table
+records. The two remaining questions about the Eno deck were never about this plan and are
+carried in **Still open**, which is the live list.
 
 ---
 

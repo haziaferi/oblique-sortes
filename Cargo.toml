@@ -49,6 +49,8 @@ trivial_casts = { level = "warn", priority = 3 }
 trivial_numeric_casts = { level = "warn", priority = 4 }
 unused_lifetimes = { level = "warn", priority = 5 }
 unused_qualifications = { level = "warn", priority = 6 }
+# Every public item is documented and carries a doctest; keep it that way.
+missing_docs = { level = "deny", priority = 7 }
 
 [lints.clippy]
 unwrap_used = "deny"

@@ -8,9 +8,9 @@
 //! worth noticing. No card quotes any of them.
 //!
 //! The deck points outward. No card addresses the reader as `you`, and none
-//! asks a question; both rules are enforced when the deck is generated, along
-//! with a sixty-character ceiling that keeps the cards short enough to hold in
-//! the head while looking at something else.
+//! asks a question; both rules are enforced by the crate's tests, along with a
+//! sixty-character ceiling that keeps the cards short enough to hold in the
+//! head while looking at something else.
 
 use crate::{Deck, Provenance};
 

@@ -16,8 +16,9 @@
 //! `dishonour` appears here as `dishonor`.
 //!
 //! The cards are labels, not sentences. None carries terminal punctuation, none
-//! is a question, and none addresses the reader; the deck describes the story
-//! rather than the person holding it. Draw two and make them the same story.
+//! is a question, and none addresses the reader; all three are enforced by the
+//! crate's tests. The deck describes the story rather than the person holding
+//! it. Draw two and make them the same story.
 
 use crate::{Deck, Provenance};
 

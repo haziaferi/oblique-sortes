@@ -13,9 +13,9 @@
 //! resembles this one. Their wording is nobody's to borrow, and none of it is
 //! here.
 //!
-//! Every card either asks a diagnostic question or gives an instruction, which
-//! is enforced when the deck is generated. Nothing here is a statement to sit
-//! with; that is what the other decks are for.
+//! Every card either asks a diagnostic question or gives an instruction.
+//! Nothing here is a statement to sit with; that is what the other decks are
+//! for.
 
 use crate::{Deck, Provenance};
 

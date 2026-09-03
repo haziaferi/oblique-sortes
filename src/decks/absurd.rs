@@ -6,8 +6,8 @@
 //! this life again; Heraclitus on standing in nothing that holds still;
 //! Ecclesiastes on being forgotten; Montaigne on how little you actually know.
 //! Camus and Sartre are in copyright, so their themes are here and none of
-//! their formulations are. A generator refuses to emit this file if a card
-//! drifts into a borrowed phrasing.
+//! their formulations are; any card that drifted toward a borrowed phrasing
+//! was rewritten before it went in.
 //!
 //! The deck addresses you directly and does not soften. It is meant to push
 //! toward acting, which is what the tradition was always for.

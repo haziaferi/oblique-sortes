@@ -2,10 +2,10 @@
 //! in a library, for those moments when the work is stuck and a dilemma needs a
 //! lateral nudge.
 //!
-//! The crate holds one deck per module under [`decks`], each drawn by the same
-//! mechanism. The top-level functions draw from the Oblique Strategies deck, so
-//! they read the way they always have; use [`decks()`] or [`deck_by_id()`] to
-//! reach any of the others.
+//! The crate holds one deck per module under [`mod@decks`], each drawn by the
+//! same mechanism. The top-level functions draw from the Oblique Strategies
+//! deck, so they read the way they always have; use [`decks()`] or
+//! [`deck_by_id()`] to reach any of the others.
 //!
 //! Cards that carry several lines of text contain embedded newline and tab
 //! characters; print them as-is and they will render the way the card reads.
@@ -406,6 +406,72 @@ mod tests {
 
     #[cfg(feature = "stuck")]
     deck_invariants!(stuck, crate::decks::stuck::DECK, 90, 80);
+
+    // ---- Voice rules ------------------------------------------------------
+    //
+    // Four decks promise a rule about how their cards may speak. The promises
+    // are kept here rather than in prose, so a card added later cannot quietly
+    // break one.
+
+    /// Whether `card` uses `word` as a whole word, ignoring case.
+    #[cfg(any(feature = "attention", feature = "dramatis"))]
+    fn uses_word(card: &str, word: &str) -> bool {
+        card.split(|c: char| !c.is_alphanumeric() && c != '\'')
+            .any(|found| found.eq_ignore_ascii_case(word))
+    }
+
+    /// What a deck that points away from the reader must never say.
+    #[cfg(any(feature = "attention", feature = "dramatis"))]
+    const SECOND_PERSON: &[&str] = &["you", "your", "yours", "yourself", "yourselves"];
+
+    /// `attention` points outward: no card addresses the reader, and none asks
+    /// a question. Its sixty-character ceiling is checked by the invariants.
+    #[cfg(feature = "attention")]
+    #[test]
+    fn attention_points_outward() {
+        for card in crate::decks::attention::DECK.cards {
+            assert!(!card.contains('?'), "attention card asks a question: {card:?}");
+            for pronoun in SECOND_PERSON {
+                assert!(
+                    !uses_word(card, pronoun),
+                    "attention card addresses the reader: {card:?}"
+                );
+            }
+        }
+    }
+
+    /// `memento` only states. `absurd` is the deck that asks and instructs;
+    /// the two are kept apart by mood, and this is the machine-checkable half
+    /// of that difference.
+    #[cfg(feature = "memento")]
+    #[test]
+    fn memento_only_states() {
+        for card in crate::decks::memento::DECK.cards {
+            assert!(!card.contains('?'), "memento card asks a question: {card:?}");
+        }
+    }
+
+    /// `dramatis` cards are labels, not sentences: no terminal punctuation, no
+    /// questions, and nothing addressed to the reader.
+    #[cfg(feature = "dramatis")]
+    #[test]
+    fn dramatis_cards_are_labels() {
+        for card in crate::decks::dramatis::DECK.cards {
+            // Cards are trimmed, which `entries_are_tidy` enforces, so the
+            // last character is the one the reader sees.
+            let last = card.chars().next_back().expect("cards are never empty");
+            assert!(
+                !matches!(last, '.' | '!' | '?'),
+                "dramatis card carries terminal punctuation: {card:?}"
+            );
+            for pronoun in SECOND_PERSON {
+                assert!(
+                    !uses_word(card, pronoun),
+                    "dramatis card addresses the reader: {card:?}"
+                );
+            }
+        }
+    }
 
     /// The only deck sourced rather than authored, so it is the only one whose
     /// provenance must carry a credit line.

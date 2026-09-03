@@ -9,8 +9,8 @@
 //!
 //! `absurd` also deals in finitude; the two are kept apart by mood. That deck
 //! provokes - it asks and it instructs. This one only states: no card here is a
-//! question and none opens with an imperative, both enforced when the deck is
-//! generated.
+//! question, which the crate's tests enforce, and none opens with an
+//! imperative, which is an editorial rule and not a checkable one.
 //!
 //! The deck withholds consolation, which the tradition does too. It is not
 //! bleak on purpose: a good third of the cards turn back toward the ordinary
