@@ -15,7 +15,8 @@
 //!
 //! Every card either asks a diagnostic question or gives an instruction.
 //! Nothing here is a statement to sit with; that is what the other decks are
-//! for.
+//! for. Which of the two a card does is an editorial rule and not a checkable
+//! one, so no test holds it.
 
 use crate::{Deck, Provenance};
 

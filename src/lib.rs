@@ -470,9 +470,12 @@ mod tests {
 
     // ---- Voice rules ------------------------------------------------------
     //
-    // Four decks promise a rule about how their cards may speak. The promises
-    // are kept here rather than in prose, so a card added later cannot quietly
-    // break one.
+    // Three decks promise a rule about how their cards may speak that a test
+    // can judge, and the checks live here rather than in prose, so a card
+    // added later cannot quietly break one. The rules that need a reader
+    // instead — memento's imperative openings, stuck's ask-or-instruct,
+    // absurd's borrowed phrasings — are named as editorial in the module
+    // docs.
 
     /// Whether `card` uses `word` as a whole word, ignoring case.
     #[cfg(any(feature = "attention", feature = "dramatis"))]

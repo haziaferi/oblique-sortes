@@ -102,7 +102,7 @@ a physical edition, it should be restored as its own card.
   "The tape is now the music", "Think of the radio", "Use fewer notes". Part of the deck's
   character, and most read as metaphor outside a studio. **Not** moved to a `studio` deck.
 - **Cards with inline glosses (2)** — "Allow an easement (an easement is the abandonment of a
-  stricture)" and the 130-character "Short circuit (example; a man eating peas…)". Kept whole.
+  stricture)" and the 127-character "Short circuit (example; a man eating peas…)". Kept whole.
   The gloss should move to a note field once `Card` gains one.
 - **Opaque cards (3)** — "Idiot glee (?)", "Lost in useless territory", "Lowest common
   denominator". Obliqueness is the point.
@@ -153,12 +153,12 @@ words).
 |---|---|---|---|
 | `oblique` | Lateral nudge, terse imperative | Canonical, attributed | Eno & Schmidt, eds. 1–5. **Default deck; unchanged API. 156 cards.** |
 | `examen` ✅ | Second-person past-tense interrogative, non-judgemental | **Original** (see below) | Register drawn from — not quoting — the Ignatian examen; the Stoic evening review in Seneca's *De Ira* III.36; Marcus Aurelius on other people's faults; Epictetus on what is ours to move; the Proust Questionnaire's habit of asking a preference to learn a character. **92 cards, max 100 chars.** |
-| `absurd` ✅ | Confrontational, second person throughout; finitude, freedom, self-deception | **Original** | Register from Kierkegaard (anxiety, the crowd, deciding without certainty), Nietzsche (would you take this life again), Heraclitus (nothing holds still), Ecclesiastes (being forgotten), Montaigne (how little you know). **Camus and Sartre: themes only, no formulations — enforced by a generator blocklist, not just intended.** **86 cards, max 120 chars.** |
+| `absurd` ✅ | Confrontational, second person throughout; finitude, freedom, self-deception | **Original** | Register from Kierkegaard (anxiety, the crowd, deciding without certainty), Nietzsche (would you take this life again), Heraclitus (nothing holds still), Ecclesiastes (being forgotten), Montaigne (how little you know). **Camus and Sartre: themes only, no formulations** — held at authoring time by a blocklist in the generator, which is not in this repo. **86 cards, max 120 chars.** |
 | `constraints` ✅ | Imperative procedure | **Technique-derived** | Oulipo (lipogram, univocalism, snowball, definitional literature, nth-noun substitution); Dada and Surrealist practice (words drawn from a bag, cut-up and fold-in, the folded sheet passed on, unsteered writing); Burroughs–Gysin cut-up. Every card restates a method in its own words; **none quotes a source**. **100 cards, max 120 chars.** |
 | `dramatis` ✅ | Generative; **labels, not sentences** | **PublicDomain** — the only sourced deck | Polti's thirty-six situations and their casts (**Ray trans. 1916**); Propp's functions (**1928 original; renderings our own, not from the in-copyright 1958 translation**); Aristotle on reversal and recognition (**Butcher 1895**). One edit: spellings normalized to the crate's US convention. **104 cards, max 90 chars.** |
 | `attention` ✅ | Imperative-to-notice; closest to Eno's "Water", "Ghost echoes" | **Original** (the "PD + original" fork, resolved as recommended) | Register from Thoreau watching a pond through a year; haiku; Zhuangzi and the *Tao Te Ching* on the usefulness of what is not there; Sei Shōnagon's lists of things worth noticing. No card quotes any of them. **93 cards, max 60 chars — the tightest ceiling in the crate, and the point of the deck.** |
-| `memento` ✅ | Finitude, plain and unconsoling; **declarative only** | **Original** | Register from Marcus Aurelius (only the present can be lost), Seneca (length is not the measure), Montaigne (the practice of thinking about dying), and the *ars moriendi* tradition. No card quotes any of them. **Rilke is untouched** — his letters remain in copyright, and the blocklist guards the famous mortality formulations besides. **76 cards, max 110 chars.** |
-| `stuck` ✅ | Eno's territory, worked in the opposite direction: **methodical, not lateral** | **Original** | Descartes on accepting nothing unexamined, dividing a difficulty, enumerating completely (1637); Pólya on restating the problem, solving a simpler one first, working backwards, finding a solved problem that resembles this one. Methods are restatable, their wording is not — a blocklist guards Pólya, de Bono and IDEO phrasings. **90 cards, max 80 chars.** |
+| `memento` ✅ | Finitude, plain and unconsoling; **declarative only** | **Original** | Register from Marcus Aurelius (only the present can be lost), Seneca (length is not the measure), Montaigne (the practice of thinking about dying), and the *ars moriendi* tradition. No card quotes any of them. **Rilke is untouched** — his letters remain in copyright, and the generator's blocklist guarded the famous mortality formulations besides. **76 cards, max 110 chars.** |
+| `stuck` ✅ | Eno's territory, worked in the opposite direction: **methodical, not lateral** | **Original** | Descartes on accepting nothing unexamined, dividing a difficulty, enumerating completely (1637); Pólya on restating the problem, solving a simpler one first, working backwards, finding a solved problem that resembles this one. Methods are restatable, their wording is not — a blocklist in the generator guarded Pólya, de Bono and IDEO phrasings. **90 cards, max 80 chars.** |
 
 ### Provenance is one value per deck — "PD + original" is not expressible
 
@@ -240,10 +240,23 @@ all now fixed:
    build. Doctests cannot be feature-gated, so they are now deck-agnostic — the only form true
    under every supported feature set.
 
-The feature matrix is now part of verification, not a claim: **default 20 unit / 16 doc;
-`oblique` only 20 / 16; each new deck alone 11 / 10, except `dramatis` at 12 / 10 (it carries
-the extra attribution test); `--all-features` 70 / 16; no deck 1 clean error.** Run every row when adding a deck — a
-deck-only build is the configuration that catches assumptions about `oblique` being present.
+The feature matrix is part of verification, not a claim. Counts below are lib unit tests /
+doctests, measured on rustc 1.92; the 14 CLI tests in `src/bin/sortes.rs` are the same in
+every configuration.
+
+| Configuration | lib | doc |
+|---|---:|---:|
+| default, which is `oblique` alone — the same set either way | 22 | 18 |
+| `examen`, `constraints`, `absurd` or `stuck` alone | 12 | 11 |
+| `attention` or `memento` alone — each carries one voice test | 13 | 11 |
+| `dramatis` alone — a voice test and the attribution test | 14 | 11 |
+| `--all-features` | 82 | 18 |
+| no deck feature | — | one clean `compile_error!` |
+
+Run every row when adding a deck — a deck-only build is the configuration that catches
+assumptions about `oblique` being present. The numbers go stale the moment a test is added,
+so treat them as a snapshot: `just features` and the CI feature-matrix job are what actually
+hold the matrix.
 
 ### Card identity — deferred, deliberately
 
@@ -332,9 +345,12 @@ Preserve `println!` of the raw string so the `\n\t` convention keeps rendering f
    (`constraints`), and `PublicDomain` (`dramatis`). A test asserts `dramatis` carries a credit
    line, since it is the only deck whose text is not ours.
 
-   **Each deck's voice rules are enforced by its generator, not just described here.** The
-   generator exits non-zero rather than write a bad file — on `absurd` it caught four cards that
-   had drifted out of direct address, which were rewritten rather than the rule loosened.
+   **Each deck's voice rules were enforced by its generator at the time the deck was built.**
+   The generator exited non-zero rather than write a bad file — on `absurd` it caught four
+   cards that had drifted out of direct address, which were rewritten rather than the rule
+   loosened. Those generators were one-off scripts run outside this repo and are not in it, so
+   nothing re-runs them and nothing here can. The rules a test can judge became crate tests
+   instead (see *Tests* above); the rest are editorial, and the module docs say so.
 
    The rules are what keep the decks from blurring into each other. They now separate cleanly:
 
@@ -343,9 +359,9 @@ Preserve `println!` of the raw string so the `\n\t` convention keeps rendering f
    | `oblique` | 127 | mixed | — | inherited, not authored |
    | `examen` | 100 | interrogative | second | US orthography |
    | `constraints` | 120 | imperative | — | no question marks; single-line cards end in a period |
-   | `absurd` | 120 | mixed | **second, every card** | blocklist of in-copyright formulations |
+   | `absurd` | 120 | mixed | **second, every card** | blocklist of in-copyright formulations, at authoring time |
    | `attention` | **60** | imperative / noun-phrase | **none — points outward** | no question marks |
-   | `memento` | 110 | **declarative only** | any | no question marks; no imperative openers; blocklist |
+   | `memento` | 110 | **declarative only** | any | no question marks; no imperative openers; blocklist, at authoring time |
    | `dramatis` | 90 | **labels, not sentences** | none | no terminal punctuation at all; no questions |
    | `stuck` | 80 | **asks or instructs, never states** | any | every card is a question or opens with an imperative |
 
@@ -359,10 +375,11 @@ Preserve `println!` of the raw string so the `\n\t` convention keeps rendering f
      asking and instructing; `memento` only states. `memento` carries 0 question marks against
      `absurd`'s 15, and refuses any card opening with an imperative verb.
 
-   **Adding a deck touches exactly five places**, and nothing else: a generator script that
-   validates before emitting, `src/decks/<id>.rs`, a `pub mod` line in `src/decks/mod.rs`, a
-   feature in `Cargo.toml` (plus the `full` list and the `compile_error!` cfg), an entry in
-   `decks()`, and a `deck_invariants!` line with the deck's count and max length.
+   **Adding a deck touches exactly five places**, and nothing else: `src/decks/<id>.rs`, a
+   `pub mod` line in `src/decks/mod.rs`, a feature in `Cargo.toml` (plus the `full` list and
+   the `compile_error!` cfg), an entry in `decks()`, and a `deck_invariants!` line with the
+   deck's count and max length. How the card text gets written is your business; the eight
+   here came from one-off generators that this repo does not carry.
 5. ~~**CLI and README** last, once the deck set is stable.~~ **Done.** The grammar is a pure
    `parse()` function over the arguments with 14 unit tests, so the CLI is testable without
    spawning a process. `--help` and `--version` were added beyond the sketch below; a CLI that

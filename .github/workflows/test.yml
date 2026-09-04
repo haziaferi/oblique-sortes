@@ -22,8 +22,9 @@ jobs:
     test:
         name: test
         runs-on: ubuntu-latest
-        # sccache is scoped to this job: it is the only one that compiles, and
-        # it is the only one that installs the wrapper.
+        # Scoped to this job, which is the only one that installs the wrapper.
+        # The feature-matrix job compiles as well and would benefit; wiring it
+        # up there is a separate change.
         env:
             SCCACHE_GHA_ENABLED: "true"
             RUSTC_WRAPPER: "sccache"
