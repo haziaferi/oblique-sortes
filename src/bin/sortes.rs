@@ -160,6 +160,13 @@ fn describe(deck: &Deck) {
             Provenance::Original => "Text written for this crate.".to_string(),
             Provenance::PublicDomain(who) => format!("Text from the public domain: {who}."),
             Provenance::Technique(who) => format!("Methods restated in original words: {who}."),
+            // `Provenance` is non-exhaustive, and this binary is a separate
+            // crate, so a mode added later lands here. `attribution()` is the
+            // one question every variant can answer.
+            other => match other.attribution() {
+                Some(who) => format!("Text from {who}."),
+                None => "Provenance not recorded.".to_string(),
+            },
         }
     );
 }

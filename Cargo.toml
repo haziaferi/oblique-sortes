@@ -42,15 +42,18 @@ full = ["oblique", "examen", "constraints", "absurd", "attention", "memento", "d
 fastrand = "2.4"
 
 [lints.rust]
-unsafe_code = { level = "deny", priority = 0 }
-future_incompatible = { level = "deny", priority = 1 }
-rust_2018_idioms = { level = "warn", priority = 2 }
-trivial_casts = { level = "warn", priority = 3 }
-trivial_numeric_casts = { level = "warn", priority = 4 }
-unused_lifetimes = { level = "warn", priority = 5 }
-unused_qualifications = { level = "warn", priority = 6 }
+# The two groups take priority -1 so a specific lint below can override a
+# member of either. The rest need no priority: none of them belongs to a
+# group listed here, so nothing overlaps.
+future_incompatible = { level = "deny", priority = -1 }
+rust_2018_idioms = { level = "warn", priority = -1 }
+unsafe_code = "deny"
+trivial_casts = "warn"
+trivial_numeric_casts = "warn"
+unused_lifetimes = "warn"
+unused_qualifications = "warn"
 # Every public item is documented and carries a doctest; keep it that way.
-missing_docs = { level = "deny", priority = 7 }
+missing_docs = "deny"
 
 [lints.clippy]
 unwrap_used = "deny"

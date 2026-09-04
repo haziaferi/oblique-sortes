@@ -35,7 +35,10 @@ pub mod decks;
 compile_error!("at least one deck feature must be enabled; the default is `oblique`");
 
 /// Where a deck's text comes from, and who to credit for it.
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+///
+/// Non-exhaustive: a mode added later must not break a consumer's `match`.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+#[non_exhaustive]
 pub enum Provenance {
     /// Text by a named author, reproduced with attribution.
     Attributed(&'static str),
@@ -59,7 +62,7 @@ impl Provenance {
     /// assert!(Provenance::Attributed("Eno").attribution().is_some());
     /// ```
     #[must_use]
-    pub const fn attribution(&self) -> Option<&'static str> {
+    pub const fn attribution(self) -> Option<&'static str> {
         match self {
             Self::Attributed(who) | Self::PublicDomain(who) | Self::Technique(who) => Some(who),
             Self::Original => None,
@@ -69,13 +72,18 @@ impl Provenance {
 
 /// A deck of cards, drawn at random.
 ///
+/// Non-exhaustive: these are the deck's fields as they stand today, and a card
+/// note or a stable card id would each add one. Build decks through this crate
+/// rather than by literal, and adding a field stays a minor release.
+///
 /// # Examples
 ///
 /// ```
 /// let deck = sortes::decks().first().expect("a deck is always compiled in");
 /// assert!(!deck.random().is_empty());
 /// ```
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+#[non_exhaustive]
 pub struct Deck {
     /// Short, stable, lowercase identifier. Unique across the crate.
     pub id: &'static str,
@@ -254,7 +262,7 @@ pub const fn strategies_as_slice() -> &'static [&'static str] {
 #[cfg(feature = "oblique")]
 #[must_use]
 pub fn strategies() -> Vec<String> {
-    strategies_as_slice().iter().map(|s| s.to_string()).collect()
+    strategies_as_slice().iter().copied().map(str::to_string).collect()
 }
 
 /// Return a randomly-selected strategy.
