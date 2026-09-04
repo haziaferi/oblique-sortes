@@ -25,8 +25,23 @@ features:
     grep -q "at least one deck feature must be enabled" build.log
     rm -f build.log
 
+# Type-check the Android JNI shim. `check` does not link, so this needs the
+# Rust target but no NDK, which makes it cheap enough to run everywhere.
+shim:
+    rustup target add aarch64-linux-android
+    cargo check --locked -p sortes-jni --target aarch64-linux-android
+
+# Build the Android app. Gradle drives cargo, so this one command is the whole
+# build: the shim, the APK, and nothing staged by hand.
+apk:
+    ./android/gradlew -p android assembleDebug
+
+# Build the app and put it on the connected device.
+install: apk
+    adb install -r android/app/build/outputs/apk/debug/app-debug.apk
+
 # Run the same checks we run in CI. Requires nightly for the formatter.
-ci: test features
+ci: test features shim
     cargo test --locked --doc --all-features
     cargo clippy --locked --all-targets --all-features -- -D warnings
     RUSTDOCFLAGS="-D warnings" cargo doc --locked --no-deps --all-features

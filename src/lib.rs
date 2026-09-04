@@ -68,6 +68,30 @@ impl Provenance {
             Self::Original => None,
         }
     }
+
+    /// A sentence saying where the text came from, ready to print.
+    ///
+    /// The wording lives here rather than in each consumer. Outside this crate
+    /// [`Provenance`] cannot be matched exhaustively, so a mode added later
+    /// would otherwise fall through to a guess in every binding that renders
+    /// one; here it is a compile error in a single place.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use sortes::Provenance;
+    /// assert_eq!(Provenance::Original.describe(), "Text written for this crate.");
+    /// assert!(Provenance::Attributed("Eno").describe().contains("Eno"));
+    /// ```
+    #[must_use]
+    pub fn describe(self) -> String {
+        match self {
+            Self::Attributed(who) => format!("Text by {who}, reproduced with attribution."),
+            Self::Original => "Text written for this crate.".to_string(),
+            Self::PublicDomain(who) => format!("Text from the public domain: {who}."),
+            Self::Technique(who) => format!("Methods restated in original words: {who}."),
+        }
+    }
 }
 
 /// A deck of cards, drawn at random.

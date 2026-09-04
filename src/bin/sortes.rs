@@ -7,7 +7,7 @@
 
 use std::process::ExitCode;
 
-use sortes::{Deck, Provenance};
+use sortes::Deck;
 
 const USAGE: &str = "\
 sortes - decks of cards for when the work will not move
@@ -153,22 +153,7 @@ fn describe(deck: &Deck) {
     println!("{} ({})", deck.name, deck.id);
     println!("{}", deck.blurb);
     println!("{} cards", deck.count());
-    println!(
-        "{}",
-        match deck.provenance {
-            Provenance::Attributed(who) => format!("Text by {who}, reproduced with attribution."),
-            Provenance::Original => "Text written for this crate.".to_string(),
-            Provenance::PublicDomain(who) => format!("Text from the public domain: {who}."),
-            Provenance::Technique(who) => format!("Methods restated in original words: {who}."),
-            // `Provenance` is non-exhaustive, and this binary is a separate
-            // crate, so a mode added later lands here. `attribution()` is the
-            // one question every variant can answer.
-            other => match other.attribution() {
-                Some(who) => format!("Text from {who}."),
-                None => "Provenance not recorded.".to_string(),
-            },
-        }
-    );
+    println!("{}", deck.provenance.describe());
 }
 
 #[cfg(test)]

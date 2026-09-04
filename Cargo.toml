@@ -1,3 +1,13 @@
+[workspace]
+# The crate stays the root package; the Android JNI shim is a member, so one
+# `cargo` drives both, they share one lockfile and one target directory, and
+# the version below is the only one in the repo.
+members = ["android/jni"]
+# A bare `cargo build`/`cargo test` at the root touches the library only. The
+# shim needs the Android NDK, and CI has none.
+default-members = ["."]
+resolver = "3"
+
 [package]
 # Not published to crates.io; installed from git. The package is named
 # `oblique-sortes` rather than `oblique` because upstream holds that name, and

@@ -4,6 +4,7 @@ on:
         branches: ["latest"]
         paths:
             - src/**
+            - android/jni/**
             - examples/**
             - Cargo.toml
             - Cargo.lock
@@ -115,6 +116,15 @@ jobs:
 
             # The crate promises this failure by name; see the `compile_error!`
             # at the crate root.
+            # The JNI shim is a workspace member and is not covered by the
+            # jobs above, which build the library alone. `cargo check` does not
+            # link, so this needs the Rust target and no NDK -- cheap, and it
+            # stops the shim rotting when the library's API moves.
+            - name: the Android JNI shim still compiles
+              run: |
+                  rustup target add aarch64-linux-android
+                  cargo check --locked -p sortes-jni --target aarch64-linux-android
+
             - name: a build with no deck fails, and says why
               shell: bash
               run: |

@@ -98,6 +98,19 @@ for deck in sortes::decks() {
 }
 ```
 
+## Android
+
+The same decks as an app: `minSdk 30`, `targetSdk 36`, arm64-v8a.
+
+```bash
+just apk        # gradle drives cargo; this is the whole build
+just install    # and put it on a connected device
+```
+
+`android/jni` is a workspace member holding the JNI shim, so the library itself
+stays platform-free and `unsafe`-free; `android/app` is one Activity with no
+AndroidX and no XML. See [android/README.md](./android/README.md).
+
 ## Credit
 
 Forked from [ceejbot/oblique](https://github.com/ceejbot/oblique) by C J Silverio, which is where the Oblique Strategies deck, the API shape and the release pipeline all come from. Brian Eno and Peter Schmidt are the originators and copyright holders of the Oblique Strategies card text; the `dramatis` deck reproduces public-domain text from Georges Polti, Vladimir Propp and Aristotle. Every other deck was written for this crate. `SPEC.md` records where each one came from and why.
