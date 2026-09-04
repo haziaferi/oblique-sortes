@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    The API 30 half of the pair. android:allowBackup is already false, so
+    nothing here can run; it exists because dataExtractionRules covers only
+    Android 12 and higher, and leaving API 30 to be inferred is the sort of gap
+    that is fine until it is not.
+
+    The path is the one SharedPreferences file the app has: Preferences.kt
+    opens "sortes", which lands as sortes.xml.
+-->
+<full-backup-content>
+    <exclude domain="sharedpref" path="sortes.xml" />
+</full-backup-content>

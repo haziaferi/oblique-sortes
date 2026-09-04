@@ -30,6 +30,9 @@ features:
 shim:
     rustup target add aarch64-linux-android
     cargo check --locked -p sortes-jni --target aarch64-linux-android
+    # The record format the Kotlin side splits on is plain Rust over the
+    # library, so its tests run on the host.
+    cargo test --locked -p sortes-jni
 
 # Build the Android app. Gradle drives cargo, so this one command is the whole
 # build: the shim, the APK, and nothing staged by hand.
@@ -39,6 +42,17 @@ apk:
 # Build the app and put it on the connected device.
 install: apk
     adb install -r android/app/build/outputs/apk/debug/app-debug.apk
+
+# The shrunk build. R8 only runs here, and a missing keep rule is invisible in
+# the debug APK, so this is the one that proves proguard-rules.pro. Unsigned
+# unless SORTES_KEYSTORE and its three passwords are in the environment.
+apk-release:
+    ./android/gradlew -p android assembleRelease
+
+# The app's own checks: JVM unit tests over the decoding and the shoe, then
+# Android lint with warnings as errors. Neither needs a device.
+app-check:
+    ./android/gradlew -p android testDebugUnitTest lintDebug
 
 # Run the same checks we run in CI. Requires nightly for the formatter.
 ci: test features shim

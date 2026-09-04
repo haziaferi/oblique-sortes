@@ -1,4 +1,37 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">sortes</string>
+
+    <!-- A Spinner announces its selection but not what the selection is of. -->
+    <string name="deck_label">Deck</string>
+
+    <string name="draw">Draw</string>
+    <string name="draw_n">Draw %1$d</string>
+    <string name="share">Share</string>
+    <string name="share_chooser">Share this card</string>
+    <string name="share_unavailable">Nothing on this device accepts shared text.</string>
+    <string name="copied">Card copied</string>
+
+    <string name="keep">Keep</string>
+    <string name="kept">Kept</string>
+    <string name="kept_toast">Card kept</string>
+    <string name="unkept_toast">Card let go</string>
+    <string name="saved">Kept cards</string>
+    <string name="saved_empty">No cards kept yet.</string>
+    <string name="card_gone">This card is no longer in the deck.</string>
+
+    <string name="find">Find</string>
+    <string name="find_in">Find in %1$s</string>
+    <string name="find_hint">Words on the card</string>
+    <string name="no_matches">Nothing matched.</string>
+
+    <string name="widget_label">A card</string>
+    <string name="widget_description">One card on the home screen. Tap it to draw another.</string>
+    <string name="widget_loading">Tap to draw a card.</string>
+    <string name="widget_unavailable">The decks did not load.</string>
+
+    <plurals name="matches">
+        <item quantity="one">%1$d matching</item>
+        <item quantity="other">%1$d matching</item>
+    </plurals>
 </resources>

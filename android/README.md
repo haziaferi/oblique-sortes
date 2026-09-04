@@ -5,16 +5,39 @@
 ```
 android/
   jni/   a cdylib workspace member. The only place `unsafe` appears.
-  app/   one Activity, views built in code. No AndroidX, no XML layouts,
-         no Compose: the only runtime dependency is the Kotlin stdlib.
+  app/   one Activity and one widget. The Activity builds its views in code;
+         the widget cannot, so it owns the single XML layout in the app. No
+         AndroidX, no Compose: the only runtime dependency is the Kotlin stdlib,
+         and the only test one is JUnit.
 ```
+
+A `RemoteViews` tree is inflated by the launcher in its own process, so a widget
+has to be a layout resource and may only use the view types `RemoteViews`
+supports. That is why `res/layout/card_widget.xml` exists and why it is the only
+one — the Activity is still built entirely in code.
 
 ## One build
 
 ```bash
-just apk        # or: ./android/gradlew -p android assembleDebug
-just install    # the same, then adb install
+just apk          # or: ./android/gradlew -p android assembleDebug
+just install      # the same, then adb install
+just apk-release  # the shrunk build, which is the one that runs R8
+just app-check    # unit tests and lint; neither needs a device
 ```
+
+## Tested without a device
+
+The app's tests run on the JVM. That is possible because the two things worth
+testing were kept away from the platform on purpose: every native call in
+`Native.kt` is split from the parsing around it, so the decoding can be handed a
+string; and `CardShoe` takes its shuffle as a function, so a test can choose
+what a pass looks like and pin down what happens at the seam between two of
+them. Nothing there loads the native library or touches a `Context`.
+
+Lint runs with `warningsAsErrors`. Four checks are disabled by name in
+`app/build.gradle.kts`, each with its reason beside it — all four are decisions
+already taken (a pinned `targetSdk`, one ABI) rather than defects, and naming
+them one at a time is what keeps the rest of the gate worth reading.
 
 Gradle drives cargo. The `buildJniShim` task compiles `sortes-jni` for
 `aarch64-linux-android` and lays the result out as `arm64-v8a/lib*.so`, and the
@@ -45,6 +68,14 @@ unit separator between fields, record separator between records.
 | `Native.decks()` | one record per deck: `id US name US count US blurb US provenance` |
 | `Native.draw(id, n)` | `n` cards, drawn without replacement, RS-separated |
 
+The encoding is `encode_decks` and `encode_draw` in `jni/src/lib.rs`; the `extern` pair around
+them only marshals. That split is what makes the format testable — `cargo test -p sortes-jni`
+runs on the host with no device and no NDK, and asserts the thing the protocol rests on: that no
+card, name, blurb or provenance line contains either separator. Kotlin's `loadDecks` drops a
+record short of its five fields rather than indexing into it; the two sides ship as separate
+artefacts, and a mismatched pair should show a short deck list rather than die on the first
+frame.
+
 The provenance sentence is **not** written here. It comes from
 `Provenance::describe()` in the library, which the CLI uses too — one wording,
 one place, and a provenance mode added later is a compile error in the library
@@ -65,5 +96,44 @@ rather than a silent fallback in each consumer.
   undefined, so each entry point wraps its work in `catch_unwind` and returns
   an empty string rather than taking the process down. That is also why the
   shim does not set `panic = "abort"`, which the CLI does.
+- **A drawn card cannot be drawn again.** Rotation, a night-mode switch and a
+  trip through the background all rebuild the Activity. `onSaveInstanceState`
+  keeps the selected deck and the card on screen, and `onCreate` restores them
+  instead of drawing something new.
+- **A Spinner reports its layout-time selection as though it were a tap.**
+  `setSelection` during `onCreate` fires `onItemSelected`, which would draw over
+  the card just restored. The listener returns when the reported position is the
+  one already held — a real pick never is, and the guard cannot drift out of
+  step the way a `restoring` flag would.
+- **The release build shrinks; the debug build does not.** R8 matches the two
+  JNI methods by name and cannot see that anything calls them. It does not in
+  fact rename them, because the default `proguard-android-optimize.txt` already
+  keeps `native <methods>` on every class — a release APK built with this
+  project's own keep rule removed still had both under their own names. So the
+  rules in `proguard-rules.pro` are explicit restatements of a default AGP
+  supplies, not the thing holding the app together; they are kept because that
+  default is not this project's to guarantee, and because the failure is silent
+  at build time and fatal on the device. What actually holds the line is the CI
+  step that reads the shipped DEX. `mapping.txt` cannot answer this: R8 omits
+  identity mappings, so a method kept and not renamed does not appear in it.
+- **The shim is built with `--profile android`, not `--release`.** The workspace
+  root sets `panic = "abort"` for `[profile.release]`, and Cargo applies a
+  profile to every member — so the shim's `catch_unwind` guards caught nothing
+  at all, because the process aborts before unwinding starts. `panic` is one of
+  the few keys a per-package override may not change, so the shim has its own
+  profile, and it refuses to compile under any other. See the `compile_error!`
+  at the top of `jni/src/lib.rs`.
+- **`versionCode` is derived, not typed.** It comes from the crate version, so
+  the two cannot drift: 0.2.0 becomes 200.
+- **The widget cannot hold a shoe.** Each update runs in a fresh process, the
+  launcher's. So the Activity keeps a `CardShoe` and deals a whole shuffled
+  pass, while the widget asks for two cards and takes the one it is not already
+  showing — which covers the repeat anyone would notice, the same card twice
+  from one tap to the next.
+- **Kept cards are stored as ids, not as text.** An id stops resolving when its
+  card is reworded or its deck leaves the build, and the app says so. Text could
+  not tell the difference, and would show the old wording for ever.
 - **No permissions.** The decks are compiled into the native library. The app
-  reads nothing, writes nothing and opens no sockets.
+  reads nothing, writes nothing and opens no sockets. Sharing a card hands text
+  to `Intent.ACTION_SEND`, which is the system's chooser and not a connection of
+  the app's own.

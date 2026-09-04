@@ -320,6 +320,20 @@ Preserve `println!` of the raw string so the `\n\t` convention keeps rendering f
 - ✅ `src/decks/{examen,absurd,constraints,dramatis,attention,memento,stuck}.rs` — all seven
   built.
 - ✅ `src/bin/sortes.rs` — argument parsing, hand-rolled. Renamed from `src/bin/oblique.rs`.
+- ✅ `src/shoe.rs` — `Shoe`: draws that do not repeat, and draws that can be replayed. The only
+  state the crate holds between calls, and the only place a generator is owned rather than
+  borrowed from the thread-local one.
+- ✅ `tests/cli.rs` — the binary run end to end: stdout, stderr and exit codes. The unit tests
+  beside `parse` cover the grammar; nothing covered the program until this.
+- ✅ `examples/no-repeat.rs` — the `Shoe`, dealing a whole deck and then replaying a seed.
+- ✅ `completions/` — bash, zsh and fish. Deck names are read from `sortes --list` rather than
+  copied, so a single-deck build completes a single deck.
+- ✅ `android/app/proguard-rules.pro` — the release build shrinks, and R8 matches the JNI
+  methods by name.
+- ✅ `src/identity.rs` — `CardId`, and the derivation pinned by a test.
+- ✅ `android/app/src/test/kotlin/` — the app's first tests. The decoding and the shoe are plain
+  Kotlin over strings, so they run on the JVM with no device; `Native.kt` splits each native call
+  from the parsing around it for exactly that reason.
 - ✅ `README.md` — deck table, per-deck attribution, provenance policy, install instructions.
 - ✅ `.github/workflows/release.yml` — `BINARY_NAME` follows `[[bin]]`, since that is what the
   pipeline uploads and hands to the Homebrew tap.
@@ -437,13 +451,44 @@ Nothing here is unfinished work; each is a decision taken deliberately.
 
 1. **Two questions about the Eno deck.** Restore "Give the name away" if it can be confirmed in
    a physical edition. Decide whether to drop the editorial `(?)` from "Idiot glee (?)".
-2. **Card identity.** `(deck_id, index)` remains the only handle. Nothing needs a stable one
-   until favourites, history or sharing arrive; alphabetical order per deck keeps indices
-   predictable in the meantime.
-3. **A seedable RNG.** `fastrand`'s thread-local global is still called directly, so there is no
-   reproducible draw and no no-repeat-until-exhausted. Both would need the generator plumbed
-   through `Deck`.
-4. **A per-card note field**, which the two Eno cards carrying inline glosses want.
-5. **i18n**, which the compile-time `const` blocks outright. Translating would mean giving up
+2. **A per-card note field**, which the two Eno cards carrying inline glosses want.
+3. **i18n**, which the compile-time `const` blocks outright. Translating would mean giving up
    `const fn` on `strategies_as_slice()` and `count()` — the one change in this project that
    would actually break the public API.
+
+### Closed since
+
+**Card identity.** Was deferred with a condition attached — "nothing needs a stable one until
+favourites, history or sharing arrive" — and the app growing kept cards is that condition being
+met, so it was built rather than deferred again. Not the `(deck_id, index)` the plan weighed and
+rejected, and not a written id per card either, which would have meant editing all eight decks
+and keeping 797 ids unique by hand. [`CardId`] is derived: FNV-1a over the deck id, a zero byte,
+and the card's own text. It survives cards being added, removed or reordered around it, and it
+changes when the card is reworded — which is the behaviour wanted, because a reworded card is a
+different card and whatever saved the old one should say so rather than substitute.
+
+A test asserts one literal id, because ids get written down outside this crate and changing how
+they are derived would invalidate every one of them silently. That test failing means the change
+was not a refactor.
+
+
+**The shim's panic guarantee was not being kept.** Not on the open list, because nobody had
+noticed it. `[profile.release]` at the workspace root sets `panic = "abort"`, Cargo applies a
+profile to every member, and the Gradle build asked for `--release` — so the shim's
+`catch_unwind` calls caught nothing, and `android/README.md` said in writing that they did. The
+shim now has its own `[profile.android]`, and a `#[cfg(panic = "abort")] compile_error!` so it
+cannot be built any other way. The claim is enforced rather than asserted, which is the rule
+this project holds everything else to.
+
+
+**A seedable RNG.** Was: "`fastrand`'s thread-local global is still called directly, so there is
+no reproducible draw and no no-repeat-until-exhausted. Both would need the generator plumbed
+through `Deck`." Both now exist, and the generator was not plumbed through `Deck` — it is owned
+by `Shoe`, so `Deck` stays a compile-time constant and `fastrand` stays out of the public API.
+`Deck::shoe()` and `Deck::shoe_with_seed()` are the two ways in, and the CLI's `--seed` is the
+same mechanism from outside. The seam between passes is handled: a card that ends one pass is
+moved aside rather than opening the next, which a test checks across sixty-four seeds.
+
+A seed is only as stable as the decks. The same seed deals the same cards for as long as the
+deck holds the same cards; one added or reworded reshuffles every seed with it. That is stated
+in the API docs, in `--help` and in the README rather than promised away.

@@ -74,3 +74,16 @@ codegen-units = 1 # Single codegen unit for better optimization
 opt-level = 3     # Maximum optimization
 strip = true      # Strip symbols for smaller binary
 panic = "abort"   # Smaller binary, no unwinding
+
+# The profile the Android shim is built with, and the reason it exists.
+#
+# Cargo honours profiles only at the workspace root, so `[profile.release]`
+# above applies to every member -- including the shim, whose `catch_unwind`
+# guards do nothing at all under `panic = "abort"`: the process aborts before
+# unwinding starts. `panic` is one of the few keys Cargo will not let a
+# per-package override change, so the shim gets its own profile instead. The
+# Gradle build asks for it by name, and `sortes-jni` refuses to compile without
+# it -- see the `compile_error!` at the top of android/jni/src/lib.rs.
+[profile.android]
+inherits = "release"
+panic = "unwind"

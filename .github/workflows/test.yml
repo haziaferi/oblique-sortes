@@ -4,7 +4,8 @@ on:
         branches: ["latest"]
         paths:
             - src/**
-            - android/jni/**
+            - tests/**
+            - android/**
             - examples/**
             - Cargo.toml
             - Cargo.lock
@@ -125,6 +126,13 @@ jobs:
                   rustup target add aarch64-linux-android
                   cargo check --locked -p sortes-jni --target aarch64-linux-android
 
+            # The shim's record format is what the Kotlin side splits on, and
+            # its tests are plain Rust over the library: they need the host, not
+            # a device. `default-members` keeps them out of the test job above,
+            # so they are asked for by name here.
+            - name: the shim's record format still round-trips
+              run: cargo test --locked -p sortes-jni
+
             - name: a build with no deck fails, and says why
               shell: bash
               run: |
@@ -134,6 +142,87 @@ jobs:
                   fi
                   cat build.log
                   grep -q "at least one deck feature must be enabled" build.log
+
+    android:
+        name: android app
+        runs-on: ubuntu-latest
+        steps:
+            - name: checkout
+              uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+              with:
+                persist-credentials: false
+
+            - name: Install Rust toolchain
+              uses: actions-rust-lang/setup-rust-toolchain@166cdcfd11aee3cb47222f9ddb555ce30ddb9659 # v1.17.0
+              with:
+                  target: aarch64-linux-android
+
+            # No third-party action for the SDK or the JDK: the ubuntu runner
+            # ships both, and every action in this repo carries a verified SHA,
+            # which is a cost worth paying only for something the image lacks.
+            # `local.properties` is not committed, so the build falls back to
+            # ANDROID_HOME, which the image sets.
+            - name: assemble the debug APK
+              shell: bash
+              run: |
+                  set -euo pipefail
+                  export ANDROID_NDK_HOME="${ANDROID_NDK_LATEST_HOME:?the runner image should provide an NDK}"
+                  ./android/gradlew -p android assembleDebug --no-daemon --console=plain
+
+            # The debug build does not shrink, so it cannot show a missing keep
+            # rule. R8 renames the `Native` methods that JNI matches by name,
+            # and that failure is silent at build time and fatal on the device,
+            # so the release build is the one that proves proguard-rules.pro.
+            # Unsigned here; no keystore reaches CI.
+            # Neither needs a device: the decoding and the shoe are plain
+            # Kotlin, which is why Native.kt splits each native call from the
+            # parsing around it and CardShoe takes its shuffle as a function.
+            - name: the app's unit tests, and lint
+              shell: bash
+              run: |
+                  set -euo pipefail
+                  export ANDROID_NDK_HOME="${ANDROID_NDK_LATEST_HOME:?the runner image should provide an NDK}"
+                  ./android/gradlew -p android testDebugUnitTest lintDebug --no-daemon --console=plain
+
+            - name: assemble the release APK, which is what runs R8
+              shell: bash
+              run: |
+                  set -euo pipefail
+                  export ANDROID_NDK_HOME="${ANDROID_NDK_LATEST_HOME:?the runner image should provide an NDK}"
+                  ./android/gradlew -p android assembleRelease --no-daemon --console=plain
+
+            # The JNI methods surviving R8 is the property that matters, and
+            # it currently holds because of a default AGP supplies rather than
+            # anything in this repo -- so check the outcome, not the rule. This
+            # catches AGP dropping that default, a switch to a different default
+            # file, or a keep rule that stops matching, all of which are silent
+            # at build time and fatal on the device. mapping.txt is no use: R8
+            # omits identity mappings, so a method kept and not renamed does not
+            # appear in it at all. Read the shipped DEX instead.
+            - name: the JNI methods survived R8
+              shell: bash
+              run: |
+                  set -euo pipefail
+                  apk=android/app/build/outputs/apk/release/app-release-unsigned.apk
+                  test -f "$apk" || { echo "no release APK to inspect" >&2; exit 1; }
+                  dexdump=$(find "${ANDROID_HOME:?}/build-tools" -type f -name 'dexdump*' | sort -V | tail -1)
+                  test -n "$dexdump" || { echo "no dexdump in the SDK build-tools" >&2; exit 1; }
+
+                  work=$(mktemp -d)
+                  unzip -q -o "$apk" 'classes*.dex' -d "$work"
+                  "$dexdump" -d "$work"/classes*.dex > "$work/dump.txt"
+
+                  # Only the Native class's own section is searched, so a name
+                  # occurring elsewhere in the DEX cannot make this pass by
+                  # accident.
+                  line=$(grep -nF "Class descriptor  : 'Ldev/feridottir/sortes/Native;'" "$work/dump.txt" | head -1 | cut -d: -f1)
+                  test -n "$line" || { echo "R8 dropped or renamed the Native class" >&2; exit 1; }
+                  section=$(tail -n "+$line" "$work/dump.txt" | sed -n '1,/source_file_idx/p')
+
+                  for method in decks draw; do
+                      echo "$section" | grep -qF "name          : '$method'" || { echo "R8 dropped or renamed Native.$method" >&2; exit 1; }
+                  done
+                  echo "Native.decks and Native.draw survived R8"
 
     fmt:
         name: formatting check

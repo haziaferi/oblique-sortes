@@ -109,10 +109,13 @@ abstract class BuildJniShim @Inject constructor(private val exec: ExecOperations
                 "CARGO_TARGET_" + triple.uppercase().replace('-', '_') + "_LINKER",
                 linker.absolutePath,
             )
-            commandLine("cargo", "build", "--locked", "--release", "-p", "sortes-jni", "--target", triple)
+            // `--profile android`, not `--release`: the shim catches its own
+            // panics, and the release profile aborts on them. The crate will
+            // not compile under the wrong one, so this cannot drift silently.
+            commandLine("cargo", "build", "--locked", "--profile", "android", "-p", "sortes-jni", "--target", triple)
         }
 
-        val produced = File(root, "target/" + triple + "/release/libsortes_jni.so")
+        val produced = File(root, "target/" + triple + "/android/libsortes_jni.so")
         check(produced.exists()) { "cargo reported success but produced no library at " + produced }
 
         val destination = outputDirectory.get().asFile.resolve(abi.get())
@@ -142,7 +145,16 @@ android {
         applicationId = "dev.feridottir.sortes"
         minSdk = nativeApiLevel
         targetSdk = 36
-        versionCode = 1
+        // Derived from the crate version rather than bumped by hand, so the
+        // two cannot disagree. 0.2.0 becomes 200; the layout holds until a
+        // component passes 99, which this project would want a different
+        // scheme for anyway.
+        versionCode = crateVersion.split(".").let { parts ->
+            require(parts.size == 3) { "the crate version should be major.minor.patch, got " + crateVersion }
+            parts.map { part ->
+                part.takeWhile(Char::isDigit).toIntOrNull() ?: error("not a number in the version: " + part)
+            }
+        }.let { (major, minor, patch) -> major * 10000 + minor * 100 + patch }
         versionName = crateVersion
 
         ndk {
@@ -156,9 +168,32 @@ android {
         }
     }
 
+    // A release keystore comes from the environment or not at all. Nothing about
+    // signing is committed, and a build without it still produces an unsigned
+    // APK, which is what a CI check wants.
+    val releaseKeystore = System.getenv("SORTES_KEYSTORE")?.let(::File)?.takeIf(File::isFile)
+
+    signingConfigs {
+        if (releaseKeystore != null) {
+            create("release") {
+                storeFile = releaseKeystore
+                storePassword = System.getenv("SORTES_KEYSTORE_PASSWORD")
+                keyAlias = System.getenv("SORTES_KEY_ALIAS")
+                keyPassword = System.getenv("SORTES_KEY_PASSWORD")
+            }
+        }
+    }
+
     buildTypes {
         release {
-            isMinifyEnabled = false
+            // R8 matches the JNI methods by name and cannot see that anything
+            // uses them. proguard-rules.pro keeps `Native` intact; without it
+            // the build stays green and every native call throws
+            // UnsatisfiedLinkError on the device.
+            isMinifyEnabled = true
+            isShrinkResources = true
+            proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
+            signingConfig = signingConfigs.findByName("release")
         }
     }
 
@@ -166,6 +201,47 @@ android {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
     }
+
+    // Kotlin lives under kotlin/ rather than java/, and the unit tests follow.
+    sourceSets {
+        getByName("test") { java.srcDirs("src/test/kotlin") }
+    }
+
+    lint {
+        // A warning nobody has to act on is a warning everybody stops reading.
+        warningsAsErrors = true
+        abortOnError = true
+        // The report is the console output; CI reads that, and a file nobody
+        // opens is not a check.
+        textReport = true
+        htmlReport = false
+        xmlReport = false
+
+        // Each of these is a decision already taken, not a defect. They are
+        // named one at a time, with the reason, rather than lowering the bar
+        // for everything by turning warningsAsErrors off.
+        disable += setOf(
+            // targetSdk and compileSdk are pinned at 36 deliberately. Moving
+            // them is a change to test, not a warning to silence by bumping.
+            "OldTargetApi",
+            "GradleDependency",
+            // arm64-v8a only, which android/README.md states. ChromeOS is not
+            // a target of a personal-use app.
+            "ChromeOsAbiSupport",
+            // local.properties is per-machine and git-ignored, so lint is
+            // reading a file that is not part of the project. The real hazard
+            // there -- backslashes in a Windows path -- is in android/README.md.
+            "PropertyEscape",
+        )
+    }
+}
+
+dependencies {
+    // Test-only, and the only dependency in the app beyond the Kotlin stdlib.
+    // JUnit rather than kotlin-test: AGP compiles this module with its built-in
+    // Kotlin and no Kotlin Gradle plugin, so `kotlin("test")` has no version to
+    // resolve against. A pinned coordinate has nothing to align with.
+    testImplementation("junit:junit:4.13.2")
 }
 
 // The Variant API, rather than sourceSets.jniLibs.srcDir: AGP 9 refuses a

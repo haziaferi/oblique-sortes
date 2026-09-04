@@ -6,20 +6,39 @@
 
     <application
         android:allowBackup="false"
-        android:icon="@android:drawable/ic_menu_compass"
+        android:dataExtractionRules="@xml/data_extraction_rules"
+        android:fullBackupContent="@xml/backup_rules"
+        android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:supportsRtl="true"
         android:theme="@android:style/Theme.DeviceDefault.DayNight">
 
+        <!-- No label: the application's own is the same string, and repeating
+             it is the only thing it would do. -->
         <activity
             android:name=".MainActivity"
-            android:exported="true"
-            android:label="@string/app_name">
+            android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <!-- One card on the home screen; tap redraws it. `exported` is required
+             because the launcher, in another process, sends both the update and
+             the tap broadcast. -->
+        <receiver
+            android:name=".CardWidget"
+            android:exported="true"
+            android:label="@string/widget_label">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+                <action android:name="dev.feridottir.sortes.DRAW" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/card_widget_info" />
+        </receiver>
     </application>
 
 </manifest>
