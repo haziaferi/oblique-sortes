@@ -11,6 +11,11 @@ on:
             - Cargo.lock
             - .rustfmt.toml
             - .github/workflows/test.yml
+            # The prose job reads these, and the docs it checks.
+            - tools/**
+            - README.md
+            - SPEC.md
+            - completions/**
     pull_request:
         branches: ["latest"]
     workflow_dispatch:
@@ -21,6 +26,21 @@ env:
     CARGO_TERM_COLOR: always
 
 jobs:
+    # Pure text over the tree, so it needs no toolchain and fails in seconds,
+    # before any Rust or Gradle job has warmed up. Every file, symbol and
+    # number the docs state must be borne out by the sources.
+    prose:
+        name: prose matches tree
+        runs-on: ubuntu-latest
+        steps:
+            - name: checkout
+              uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+              with:
+                persist-credentials: false
+
+            - name: the docs describe the code that exists
+              run: python3 tools/spec_check.py
+
     test:
         name: test
         runs-on: ubuntu-latest
@@ -196,9 +216,10 @@ jobs:
             # anything in this repo -- so check the outcome, not the rule. This
             # catches AGP dropping that default, a switch to a different default
             # file, or a keep rule that stops matching, all of which are silent
-            # at build time and fatal on the device. mapping.txt is no use: R8
-            # omits identity mappings, so a method kept and not renamed does not
-            # appear in it at all. Read the shipped DEX instead.
+            # at build time and fatal on the device. The check is a script so
+            # `just r8-check` runs the same thing locally; it reads the method
+            # list out of Native.kt, because a copy written here once shipped
+            # three entry points unchecked.
             - name: the JNI methods survived R8
               run: python3 tools/r8_check.py
 

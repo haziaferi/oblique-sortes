@@ -10,3 +10,6 @@
 
 # Machine-specific SDK location.
 /android/local.properties
+
+# Python bytecode from running the checks in tools/.
+__pycache__/

@@ -49,8 +49,8 @@ install: apk
 apk-release:
     ./android/gradlew -p android assembleRelease
 
-# The app's own checks: JVM unit tests over the decoding and the shoe, then
-# Android lint with warnings as errors. Neither needs a device.
+# The app's own checks: JVM unit tests over the decoding, the shoe and the
+# manifest, then Android lint with warnings as errors. Neither needs a device.
 app-check:
     ./android/gradlew -p android testDebugUnitTest lintDebug
 
@@ -59,8 +59,13 @@ app-check:
 r8-check:
     python3 tools/r8_check.py
 
+# Every file, symbol and number the docs state must be borne out by the tree.
+# Pure text; needs no toolchain and runs in a second.
+spec-check:
+    python3 tools/spec_check.py
+
 # Run the same checks we run in CI. Requires nightly for the formatter.
-ci: test features shim
+ci: spec-check test features shim
     cargo test --locked --doc --all-features
     cargo clippy --locked --all-targets --all-features -- -D warnings
     RUSTDOCFLAGS="-D warnings" cargo doc --locked --no-deps --all-features

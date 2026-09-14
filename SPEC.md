@@ -339,8 +339,12 @@ Preserve `println!` of the raw string so the `\n\t` convention keeps rendering f
 - ✅ `android/app/src/test/kotlin/` — the app's first tests. The decoding and the shoe are plain
   Kotlin over strings, so they run on the JVM with no device; `Native.kt` splits each native call
   from the parsing around it for exactly that reason.
+- ✅ `tools/spec_check.py` — every file, symbol and number this document, `README.md`,
+  `android/README.md` and `completions/README.md` state, checked against the tree on every push.
 - ✅ `tools/r8_check.py` — the shipped DEX read back, every JNI method's name found in it. The
   same check CI runs, as a script so it runs locally too.
+- ✅ `android/app/src/test/kotlin/dev/feridottir/sortes/ManifestAgreementTest.kt` — the manifest,
+  the widget's provider XML and the Kotlin held to the facts they each state twice.
 - ✅ `README.md` — deck table, per-deck attribution, provenance policy, install instructions.
 - ✅ `.github/workflows/release.yml` — `BINARY_NAME` follows `[[bin]]`, since that is what the
   pipeline uploads and hands to the Homebrew tap.
@@ -501,6 +505,8 @@ moved aside rather than opening the next, which a test checks across sixty-four 
 A seed is only as stable as the decks. The same seed deals the same cards for as long as the
 deck holds the same cards; one added or reworded reshuffles every seed with it. That is stated
 in the API docs, in `--help` and in the README rather than promised away.
+
+
 **Three JNI entry points were shipping unverified against R8.** The CI step that reads the
 shipped DEX was written when the surface was two calls, and it named them: `for method in decks
 draw`. Adding the shoe, the card ids and the search grew the surface to five, and the loop stayed
@@ -511,12 +517,6 @@ reads the method names out of `Native.kt`, and grows with the surface. The keep 
 `proguard-rules.pro` was already a wildcard over the class and so had not gone stale with it,
 which is why nothing broke while the check was blind.
 
-**The completions' contract with `--list` was prose only.** The three shell scripts read deck ids
-out of `--list` rather than keeping a copy, on one shared rule — a deck line is one whose card
-count is a number, and the marker on the default deck shifts the columns. `completions/README.md`
-said so; nothing checked it. A change to the shape of that output would have left every shell
-quietly offering no deck names at all. `tests/cli.rs` now applies that rule to the binary's real
-output and asserts it recovers exactly the decks that are compiled in.
 **Two symbols were alive only in their own tests.** `CardShoe.remaining` was read by nothing
 outside the tests of `restore`; it is gone, and those tests observe `cursor()` instead, which
 `onSaveInstanceState` genuinely writes down. Removing it also cost nothing in coverage — the test
@@ -545,3 +545,29 @@ macOS ships — reads the argument after `-i` as a backup suffix. All three bump
 against a copy of the real manifest and produce 0.2.1, 0.3.0 and 1.0.0, changing that one line and
 nothing else.
 
+**Nothing held the prose to the code.** The tests hold the code to what the prose says about
+cards and draws; the prose itself could say anything about the code and pass. Two audits found
+the drift by hand — "two calls" after the JNI surface had five, "14 CLI tests" after there were
+26, the other seven introduced by six purposes, a voice-rule table giving one deck's longest card
+where every other row gave its ceiling — and a hand pass runs once. `tools/spec_check.py` is the
+mechanical form, lifted from chronicle's (which is mnemo's) and given the layer neither has: it
+checks the *numbers*. Every card count, deck total, length ceiling, question count, the JNI call
+count, the field count, the disabled-lint count, the CLI test count and the multi-line card count
+are read from the tree and compared with every place the docs state them. Files named must exist;
+symbols named must appear in the sources. Its first run found the voice-rule table's `oblique`
+row, which had been read past twice. It is CI's first job, before any toolchain warms up.
+
+Two smaller harvests from the same neighbours. The DEX check moved out of the workflow YAML into
+`tools/r8_check.py`, chronicle's shape for the check chronicle lifted from here — as a script it
+runs locally with `just r8-check` rather than only on a push. And `ManifestAgreementTest` pins
+the facts written in two places that drift with no error: the tap action in the manifest and in
+`CardWidget`, `updatePeriodMillis` in the provider XML and the KDoc that promises it is zero, the
+one activity, one receiver, one layout and no permissions the README describes. That is mnemo's
+`WidgetSizeClassTest`, which holds its Kotlin size ladder to its provider XML for the same reason.
+
+**The completions' contract with `--list` was prose only.** The three shell scripts read deck ids
+out of `--list` rather than keeping a copy, on one shared rule — a deck line is one whose card
+count is a number, and the marker on the default deck shifts the columns. `completions/README.md`
+said so; nothing checked it. A change to the shape of that output would have left every shell
+quietly offering no deck names at all. `tests/cli.rs` now applies that rule to the binary's real
+output and asserts it recovers exactly the decks that are compiled in.

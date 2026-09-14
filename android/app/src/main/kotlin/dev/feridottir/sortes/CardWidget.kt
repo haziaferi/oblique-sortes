@@ -91,8 +91,13 @@ class CardWidget : AppWidgetProvider() {
         return PendingIntent.getBroadcast(context, 0, intent, PendingIntent.FLAG_IMMUTABLE)
     }
 
-    private companion object {
-        /** Sent by the widget to itself when tapped. */
+    internal companion object {
+        /**
+         * Sent by the widget to itself when tapped. The manifest's `<receiver>`
+         * filter carries the same string, and a test holds the two together:
+         * if they drift apart the tap is delivered to nothing and the widget
+         * simply stops redrawing, with no error anywhere.
+         */
         const val ACTION_DRAW = "dev.feridottir.sortes.DRAW"
     }
 }

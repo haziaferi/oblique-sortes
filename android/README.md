@@ -27,12 +27,31 @@ just app-check    # unit tests and lint; neither needs a device
 
 ## Tested without a device
 
-The app's tests run on the JVM. That is possible because the two things worth
+The app's tests run on the JVM. That is possible because the things worth
 testing were kept away from the platform on purpose: every native call in
 `Native.kt` is split from the parsing around it, so the decoding can be handed a
-string; and `CardShoe` takes its shuffle as a function, so a test can choose
-what a pass looks like and pin down what happens at the seam between two of
-them. Nothing there loads the native library or touches a `Context`.
+string; searching is `cardsMatching`, a function over a list rather than a
+method on the Activity; and `CardShoe` takes its shuffle as a function, so a
+test can choose what a pass looks like and pin down what happens at the seam
+between two of them. Nothing there loads the native library or touches a
+`Context`.
+
+That last point is the rule, not a coincidence: the JVM suite reaches `Native.kt`
+and `CardShoe.kt` and reaches neither `MainActivity` nor `CardWidget`. Logic that
+wants a test goes in the first pair.
+
+`ManifestAgreementTest` reads the manifest and the widget's provider XML as plain
+files and holds them to the Kotlin: the tap action `CardWidget` sends is the one
+the manifest's receiver filter carries, `updatePeriodMillis` is the zero the KDoc
+promises, and the tree really does hold one activity, one receiver, one layout and
+no permissions. Each is a fact written in two places that could drift with no
+error and no visible failure.
+
+Two checks run outside Gradle. `just spec-check` (`tools/spec_check.py`) holds this
+file, the root README and SPEC.md to the tree — every file and symbol they name,
+and every number they state. `just r8-check` (`tools/r8_check.py`) reads the
+release DEX and finds every JNI method's name in it; it is what CI runs after
+`assembleRelease`, as a script so it runs here too.
 
 Lint runs with `warningsAsErrors`. Four checks are disabled by name in
 `app/build.gradle.kts`, each with its reason beside it — all four are decisions
@@ -67,6 +86,9 @@ unit separator between fields, record separator between records.
 |---|---|
 | `Native.decks()` | one record per deck: `id US name US count US blurb US provenance` |
 | `Native.draw(id, n)` | `n` cards, drawn without replacement, RS-separated |
+| `Native.shuffled(id)` | the whole deck in shuffled order, RS-separated: one pass for a `CardShoe` |
+| `Native.cardId(id, card)` | that card's stable id, or empty if the deck does not hold it |
+| `Native.cardById(cardId)` | `deckId US card`, or empty if nothing answers to the id any more |
 
 The encoding is the `encode_*` functions in `jni/src/lib.rs`; each `extern` wrapper around them
 only marshals. That split is what makes the format testable — `cargo test -p sortes-jni`
@@ -86,9 +108,6 @@ rather than a silent fallback in each consumer.
 - **`local.properties` needs forward slashes.** A `.properties` file reads
   `\U` as an escape, so a Windows path with backslashes parses as
   `C:UsersUser...` and the build fails with `Invalid file path`.
-| `Native.shuffled(id)` | the whole deck in shuffled order, RS-separated: one pass for a `CardShoe` |
-| `Native.cardId(id, card)` | that card's stable id, or empty if the deck does not hold it |
-| `Native.cardById(cardId)` | `deckId US card`, or empty if nothing answers to the id any more |
 - **The API level is one fact.** `nativeApiLevel` in `app/build.gradle.kts`
   picks the NDK linker (`aarch64-linux-android30-clang`) *and* sets `minSdk`.
   They cannot disagree.
