@@ -73,20 +73,41 @@ lint: fmt
 fmt:
     cargo +nightly fmt --all
 
-# Install required tools. `tomato` and `semver-bump` come from the tap and are
-# used by `version`; nextest runs the tests.
+# Install required tools: nextest runs the tests, nightly runs the formatter.
+#
+# Through cargo rather than Homebrew, which reaches macOS and Linux and not
+# Windows. cargo is the one package manager this project already requires, so
+# installing with it costs no dependency that was not there anyway, and the
+# recipe is the same command on all three platforms.
 setup:
-    brew tap ceejbot/tap
-    brew install tomato semver-bump cargo-nextest
+    cargo install --locked cargo-nextest
     rustup install nightly
 
 # Tag a new version for release.
+#
+# The bump is arithmetic on the three parts, so cutting a release needs nothing
+# beyond the Rust toolchain and a shell -- `tomato` and `semver-bump` were both
+# Homebrew-only in practice, which put a release out of reach on Windows.
+#
+# `sed` writes to a new file and moves it rather than using `-i`: BSD sed, which
+# is what macOS ships, reads the argument after `-i` as a backup suffix and GNU
+# sed does not, so the in-place form is the one thing here that would not travel.
+# The range form `0,/re/` stops at the first match, which is the `[package]`
+# version -- the `[workspace]` table above it carries none.
 version BUMP:
     #!/usr/bin/env bash
-    set -e
-    current=$(tomato get package.version Cargo.toml)
-    version=$(semver-bump {{ BUMP }} "$current")
-    tomato set package.version "$version" Cargo.toml &> /dev/null
+    set -euo pipefail
+    current=$(sed -n 's/^version = "\(.*\)"$/\1/p' Cargo.toml | head -1)
+    IFS=. read -r major minor patch <<< "$current"
+    case "{{ BUMP }}" in
+        major) major=$((major + 1)); minor=0; patch=0 ;;
+        minor) minor=$((minor + 1)); patch=0 ;;
+        patch) patch=$((patch + 1)) ;;
+        *) echo "bump must be major, minor or patch; got {{ BUMP }}" >&2; exit 1 ;;
+    esac
+    version="$major.$minor.$patch"
+    sed "0,/^version = \"$current\"$/s//version = \"$version\"/" Cargo.toml > Cargo.toml.new
+    mv Cargo.toml.new Cargo.toml
     cargo generate-lockfile
     git commit Cargo.toml Cargo.lock -m "v${version}"
     git tag "v${version}"

@@ -536,3 +536,12 @@ not assumed. Sorting there reproduces the deck's own order exactly: the crate so
 and a continuation opens with a newline, which is below every character a first line can end on.
 Checked across all eight decks and all thirty-three multi-line cards.
 
+**`just setup` and `just version` were Homebrew-only.** Both are now toolless. `setup` installs
+nextest with `cargo install`, which is the one package manager the project already requires and
+the same command on all three platforms; `version` does the semver arithmetic in the shell rather
+than through `tomato` and `semver-bump`, which put cutting a release out of reach on Windows. The
+`sed` writes to a new file and moves it rather than using `-i`, because BSD sed — which is what
+macOS ships — reads the argument after `-i` as a backup suffix. All three bump kinds were run
+against a copy of the real manifest and produce 0.2.1, 0.3.0 and 1.0.0, changing that one line and
+nothing else.
+
