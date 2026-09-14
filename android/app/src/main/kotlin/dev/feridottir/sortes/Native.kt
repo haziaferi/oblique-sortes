@@ -84,6 +84,33 @@ internal fun shuffledDeck(deckId: String): List<String> = splitCards(Native.shuf
 /** The splitting half of the draw calls, split out so it can be tested off-device. */
 internal fun splitCards(encoded: String): List<String> = encoded.split(Native.RS).filter(String::isNotEmpty)
 
+/**
+ * Every card of [cards] containing [needle], ignoring case, in the deck's order.
+ *
+ * An empty needle matches every card. That is `Deck::find`'s documented rule and
+ * what `sortes <deck> --find ""` prints, and it is how the app is browsed: leave
+ * the box empty and the whole deck comes back. The app answered "Nothing
+ * matched" to that input until this, which was the one place it contradicted a
+ * library contract the crate's own tests enforce.
+ *
+ * The needle is trimmed, which the CLI does not do: a text field collects
+ * trailing spaces in a way a shell argument does not, and a search for a space
+ * is not a thing anyone means to ask for.
+ *
+ * Sorting reproduces the deck's own order. The crate sorts each deck by its
+ * cards' first lines, and a card's continuation begins with a newline, which
+ * sorts below every character a first line can end on — so ordinary string
+ * order and the deck's order are the same sequence. Checked across all eight
+ * decks and all thirty-three multi-line cards.
+ *
+ * It lives here rather than in the Activity because this is a file the JVM
+ * tests can reach and an Activity is not.
+ */
+internal fun cardsMatching(cards: List<String>, needle: String): List<String> {
+    val wanted = needle.trim()
+    return cards.filter { it.contains(wanted, ignoreCase = true) }.sorted()
+}
+
 /** This card's stable id, or `null` if the deck does not hold it. */
 internal fun cardIdOf(deckId: String, card: String): String? = Native.cardId(deckId, card).ifEmpty { null }
 

@@ -181,8 +181,9 @@ just install    # and put it on a connected device
 `android/jni` is a workspace member holding the JNI shim, so the library itself
 stays platform-free and `unsafe`-free; `android/app` is one Activity with no
 AndroidX and one XML layout, which is the widget's and belongs to it. Pick a
-deck, draw one card or several, search it, keep the ones worth keeping, share
-one or long-press to copy it. Draws come from a shoe, so working through a deck
+deck, draw one card or several, search it — or search for nothing and read the
+deck whole, as `--find ""` does — keep the ones worth keeping, share one or
+long-press to copy it. Draws come from a shoe, so working through a deck
 does not hand back cards already seen, and a drawn card survives a rotation
 because it cannot be drawn again. There is a home-screen widget that shows one
 card and redraws it when tapped. See [android/README.md](./android/README.md).

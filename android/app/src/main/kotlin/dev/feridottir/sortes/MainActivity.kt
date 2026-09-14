@@ -334,7 +334,14 @@ class MainActivity : Activity() {
     private fun currentCardId(): String? =
         current.takeIf { it.isNotEmpty() }?.let { card -> cardIdOf(decks[selected].id, card) }
 
-    /** Search the current deck, and offer what matches. */
+    /**
+     * Search the current deck, and offer what matches.
+     *
+     * An empty box matches every card, so this is also how the deck is read
+     * whole — the app's answer to the command line's `--all`. There is no fifth
+     * button for it because the search already does it, and because the row
+     * holds four.
+     */
     private fun find() {
         val deck = decks[selected]
         val input = EditText(this).apply {
@@ -356,16 +363,16 @@ class MainActivity : Activity() {
             .show()
     }
 
-    /** Every card of this deck containing [needle], ignoring case. */
-    private fun Deck.matching(needle: String): List<String> {
-        val wanted = needle.trim()
-        if (wanted.isEmpty()) {
-            return emptyList()
-        }
-        // The whole pass rather than the native find: the app already has a way
-        // to ask for every card of a deck, and one call beats one per match.
-        return shuffledDeck(id).filter { it.contains(wanted, ignoreCase = true) }.sorted()
-    }
+    /**
+     * Every card of this deck containing [needle], ignoring case.
+     *
+     * Filtered in Kotlin rather than behind a sixth native call: the app already
+     * has a way to ask for every card of a deck, and searching a list it holds
+     * costs one JNI crossing instead of a new one to maintain. The matching
+     * itself is [cardsMatching], which the JVM tests reach and this Activity
+     * does not.
+     */
+    private fun Deck.matching(needle: String): List<String> = cardsMatching(shuffledDeck(id), needle)
 
     /**
      * The cards that were kept, resolved through their ids.

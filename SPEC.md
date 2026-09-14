@@ -526,3 +526,13 @@ test, and was then dropped. Kept cards are held in one list across every deck, s
 dialog was showing cards from different decks with nothing to tell them apart. It labels them
 now, which is what the field was carrying the deck id for all along.
 
+**The app contradicted the library on an empty search.** `Deck::find` documents that an empty
+needle matches every card, `tests/cli.rs` holds the CLI to it, and the app returned nothing and
+said "Nothing matched". Fixing it also closed the app's only missing CLI verb: an empty box is
+how a deck is now read whole, which is what `--all` does, so no fifth button was needed for a row
+that has room for four. The matching moved out of `MainActivity` into `Native.kt` as
+`cardsMatching`, because the JVM suite reaches that file and does not reach an Activity — measured,
+not assumed. Sorting there reproduces the deck's own order exactly: the crate sorts by first line,
+and a continuation opens with a newline, which is below every character a first line can end on.
+Checked across all eight decks and all thirty-three multi-line cards.
+

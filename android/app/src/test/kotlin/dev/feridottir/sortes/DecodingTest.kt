@@ -115,4 +115,60 @@ class DecodingTest {
         assertNull(parseFoundCard(us + "no deck id"))
         assertNull(parseFoundCard("no card text" + us))
     }
+
+    // ---- searching, which is also how the deck is read whole ----------------
+    //
+    // A pass arrives from the native side shuffled, so these hand it one in an
+    // order no answer should depend on.
+    private val pass = listOf("Water", "Ghost echoes", "Accretion", "Repetition is a form of change")
+
+    /**
+     * The rule the crate documents and `tests/cli.rs` enforces: an empty needle
+     * matches every card. The app answered "Nothing matched" to that input until
+     * this test existed, which made it the one place the app contradicted the
+     * library.
+     */
+    @Test
+    fun `an empty needle matches every card`() {
+        assertEquals(pass.sorted(), cardsMatching(pass, ""))
+    }
+
+    /** A box holding only spaces is an empty box, whatever the keyboard put in it. */
+    @Test
+    fun `a blank needle matches every card`() {
+        assertEquals(pass.sorted(), cardsMatching(pass, "   "))
+    }
+
+    @Test
+    fun `matching ignores case`() {
+        assertEquals(listOf("Ghost echoes"), cardsMatching(pass, "GHOST"))
+        assertEquals(listOf("Ghost echoes"), cardsMatching(pass, "ghost"))
+    }
+
+    /**
+     * The pass comes across shuffled and the deck has an order, so matches are
+     * sorted back into it rather than shown as they were dealt.
+     */
+    @Test
+    fun `matches come back in the deck's order, not the pass's`() {
+        assertEquals(listOf("Accretion", "Ghost echoes", "Repetition is a form of change", "Water"),
+                     cardsMatching(pass, ""))
+    }
+
+    /**
+     * A multi-line card sorts by its first line, because the newline that opens
+     * its continuation is below every character a first line can end on. That is
+     * what lets ordinary string order stand in for the deck's own.
+     */
+    @Test
+    fun `a multi-line card sorts by its first line`() {
+        val cards = listOf("Think of the radio", "Think\n\t-inside the work", "Water")
+        assertEquals(listOf("Think\n\t-inside the work", "Think of the radio", "Water"),
+                     cardsMatching(cards, ""))
+    }
+
+    @Test
+    fun `a needle nothing carries matches nothing`() {
+        assertTrue(cardsMatching(pass, "no card says this and none ever will").isEmpty())
+    }
 }

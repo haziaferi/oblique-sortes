@@ -139,6 +139,12 @@ rather than a silent fallback in each consumer.
 - **Kept cards are stored as ids, not as text.** An id stops resolving when its
   card is reworded or its deck leaves the build, and the app says so. Text could
   not tell the difference, and would show the old wording for ever.
+- **An empty search box is how the deck is read whole.** `Deck::find` documents
+  that an empty needle matches every card, and `tests/cli.rs` holds the CLI to
+  it; the app used to answer "Nothing matched" to the same input, which made it
+  the one place the app contradicted the library. It now returns the deck, which
+  is also the app's answer to `--all` — and costs no fifth button, of which the
+  row has no room for one anyway.
 - **No permissions.** The decks are compiled into the native library. The app
   reads nothing, writes nothing and opens no sockets. Sharing a card hands text
   to `Intent.ACTION_SEND`, which is the system's chooser and not a connection of

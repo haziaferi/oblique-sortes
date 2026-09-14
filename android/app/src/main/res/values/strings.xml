@@ -26,7 +26,10 @@
 
     <string name="find">Find</string>
     <string name="find_in">Find in %1$s</string>
-    <string name="find_hint">Words on the card</string>
+    <!-- Leaving the box empty matches every card, as an empty needle does on the
+         command line, and is how the whole deck is browsed. The hint is the only
+         thing that says so. -->
+    <string name="find_hint">Words on the card, or nothing for all</string>
     <string name="no_matches">Nothing matched.</string>
 
     <string name="widget_label">A card</string>
