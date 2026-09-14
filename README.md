@@ -1,6 +1,6 @@
 # oblique-sortes
 
-Eight decks of cards for when the work will not move. Brian Eno and Peter Schmidt's [Oblique Strategies](https://en.wikipedia.org/wiki/Oblique_Strategies) is one of them; the other seven are for the end of a day, for writing under constraint, for finitude, for attention, for assembling a story, and for a problem that has stopped.
+Eight decks of cards for when the work will not move. Brian Eno and Peter Schmidt's [Oblique Strategies](https://en.wikipedia.org/wiki/Oblique_Strategies) is one of them; the other seven are for the end of a day, for writing under constraint, for freedom and self-deception, for attention, for finitude, for assembling a story, and for a problem that has stopped.
 
 Named for the *sortes Vergilianae*, the practice of opening Virgil at random and taking what you land on as counsel. That is the whole mechanism here.
 

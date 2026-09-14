@@ -17,8 +17,11 @@ val crateVersion: String =
         ?.substringBefore('"')
         ?: error("no [package] version in the workspace root Cargo.toml")
 
-val rustTriple = "aarch64-linux-android"
-val abi = "arm64-v8a"
+// Named for the shim rather than after the task properties they feed, so the
+// registration below can pass them along instead of repeating the literals --
+// which is a place two copies of one fact could drift apart.
+val shimTriple = "aarch64-linux-android"
+val shimAbi = "arm64-v8a"
 
 // The NDK keys its sysroot to the API level, so this number and `minSdk` below
 // are the same fact and are written once.
@@ -56,7 +59,7 @@ val ndkHostTag = when {
 }
 val linkerFile = File(
     ndkDir,
-    "toolchains/llvm/prebuilt/" + ndkHostTag + "/bin/" + rustTriple + nativeApiLevel + "-clang" +
+    "toolchains/llvm/prebuilt/" + ndkHostTag + "/bin/" + shimTriple + nativeApiLevel + "-clang" +
         if (osName.contains("win")) ".cmd" else "",
 )
 
@@ -131,8 +134,8 @@ val buildJniShim = tasks.register<BuildJniShim>("buildJniShim") {
     shimManifest.set(rootProject.file("../android/jni/Cargo.toml"))
     lockfile.set(rootProject.file("../Cargo.lock"))
     workspaceRoot.set(rootProject.file(".."))
-    rustTriple.set("aarch64-linux-android")
-    abi.set("arm64-v8a")
+    rustTriple.set(shimTriple)
+    abi.set(shimAbi)
     linkerPath.set(linkerFile.absolutePath)
     outputDirectory.set(layout.buildDirectory.dir("jniLibs"))
 }
@@ -158,7 +161,7 @@ android {
         versionName = crateVersion
 
         ndk {
-            abiFilters += abi
+            abiFilters += shimAbi
         }
     }
 

@@ -1,14 +1,14 @@
 //! JNI shim over `sortes`, for the Android app.
 //!
-//! Two entry points, both returning one flat string. Cards carry embedded
+//! Five entry points, each returning one flat string. Cards carry embedded
 //! newlines and tabs, so the separators here are ASCII control codes that
 //! cannot occur in card text: unit separator between fields, record separator
 //! between records. Kotlin splits on the same two.
 //!
-//! The encoding lives in [`encode_decks`] and [`encode_draw`], which are plain
-//! functions over the library and are unit-tested below. The `extern` pair
-//! around them does nothing but marshal, so the format is testable on the host
-//! with no device, no emulator and no NDK.
+//! The encoding lives in the `encode_*` functions, which are plain functions
+//! over the library and are unit-tested below. Each `extern` wrapper does
+//! nothing but marshal, so the format is testable on the host with no device,
+//! no emulator and no NDK.
 //!
 //! Every entry point catches its own panics. A panic unwinding out of a JNI
 //! call is undefined behaviour, and this crate would rather return an empty

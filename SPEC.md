@@ -241,17 +241,22 @@ all now fixed:
    under every supported feature set.
 
 The feature matrix is part of verification, not a claim. Counts below are lib unit tests /
-doctests, measured on rustc 1.92; the 14 CLI tests in `src/bin/sortes.rs` are the same in
+doctests, measured on rustc 1.92; the 26 CLI tests in `src/bin/sortes.rs` are the same in
 every configuration.
 
 | Configuration | lib | doc |
 |---|---:|---:|
-| default, which is `oblique` alone — the same set either way | 22 | 18 |
-| `examen`, `constraints`, `absurd` or `stuck` alone | 12 | 11 |
-| `attention` or `memento` alone — each carries one voice test | 13 | 11 |
-| `dramatis` alone — a voice test and the attribution test | 14 | 11 |
-| `--all-features` | 82 | 18 |
+| default, which is `oblique` alone — the same set either way | 41 | 38 |
+| `examen`, `constraints`, `absurd` or `stuck` alone | 30 | 31 |
+| `attention` or `memento` alone — each carries one voice test | 31 | 31 |
+| `dramatis` alone — a voice test and the attribution test | 32 | 31 |
+| `--all-features` | 101 | 38 |
 | no deck feature | — | one clean `compile_error!` |
+
+The gaps between the rows are the feature gating, and they add up: `oblique` alone carries
+eleven more lib tests than a bare deck (ten top-level ones plus the pinned derivation) and seven
+more doctests (one per top-level function). `tests/cli.rs` runs the binary itself and is counted
+in neither column.
 
 Run every row when adding a deck — a deck-only build is the configuration that catches
 assumptions about `oblique` being present. The numbers go stale the moment a test is added,
@@ -370,7 +375,7 @@ Preserve `println!` of the raw string so the `\n\t` convention keeps rendering f
 
    | Deck | Max | Mood | Person | Also enforced |
    |---|---|---|---|---|
-   | `oblique` | 127 | mixed | — | inherited, not authored |
+   | `oblique` | 130 | mixed | — | inherited, not authored; the ceiling sits just over its 127-character "Short circuit" card |
    | `examen` | 100 | interrogative | second | US orthography |
    | `constraints` | 120 | imperative | — | no question marks; single-line cards end in a period |
    | `absurd` | 120 | mixed | **second, every card** | blocklist of in-copyright formulations, at authoring time |
@@ -395,7 +400,7 @@ Preserve `println!` of the raw string so the `\n\t` convention keeps rendering f
    deck's count and max length. How the card text gets written is your business; the eight
    here came from one-off generators that this repo does not carry.
 5. ~~**CLI and README** last, once the deck set is stable.~~ **Done.** The grammar is a pure
-   `parse()` function over the arguments with 14 unit tests, so the CLI is testable without
+   `parse()` function over the arguments with 26 unit tests, so the CLI is testable without
    spawning a process. `--help` and `--version` were added beyond the sketch below; a CLI that
    takes arguments and cannot explain them is not finished. No new dependency: the crate still
    has exactly one.
