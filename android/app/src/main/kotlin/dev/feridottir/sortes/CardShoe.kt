@@ -18,10 +18,6 @@ internal class CardShoe(val deckId: String, private val shuffle: (String) -> Lis
     private var order: List<String> = emptyList()
     private var next: Int = 0
 
-    /** How many cards are left before this shoe shuffles again. */
-    val remaining: Int
-        get() = (order.size - next).coerceAtLeast(0)
-
     /**
      * Deal the next card, or `null` if the deck turns out to be empty.
      *
@@ -42,7 +38,14 @@ internal class CardShoe(val deckId: String, private val shuffle: (String) -> Lis
     /** Deal up to [count] cards, crossing a reshuffle if it has to. */
     fun draw(count: Int): List<String> = (0 until count).mapNotNull { draw() }
 
-    /** Restore a cursor saved across a rotation, keeping the pass it belongs to. */
+    /**
+     * Restore a cursor saved across a rotation, keeping the pass it belongs to.
+     *
+     * The cursor is clamped to the pass it arrives with. A `Bundle` survives the
+     * process being killed and restarted, so the pair can come back from a build
+     * that dealt a different deck; a cursor past the end deals a fresh pass
+     * rather than nothing, and one below the start deals the pass entire.
+     */
     fun restore(order: List<String>, next: Int) {
         this.order = order
         this.next = next.coerceIn(0, order.size)
@@ -51,7 +54,7 @@ internal class CardShoe(val deckId: String, private val shuffle: (String) -> Lis
     /** The pass this shoe is dealing from, for saving across a rotation. */
     fun pass(): List<String> = order
 
-    /** How far into that pass it has got. */
+    /** How far into that pass it has got, for saving alongside [pass]. */
     fun cursor(): Int = next
 
     private fun refill() {

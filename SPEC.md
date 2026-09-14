@@ -517,3 +517,12 @@ count is a number, and the marker on the default deck shifts the columns. `compl
 said so; nothing checked it. A change to the shape of that output would have left every shell
 quietly offering no deck names at all. `tests/cli.rs` now applies that rule to the binary's real
 output and asserts it recovers exactly the decks that are compiled in.
+**Two symbols were alive only in their own tests.** `CardShoe.remaining` was read by nothing
+outside the tests of `restore`; it is gone, and those tests observe `cursor()` instead, which
+`onSaveInstanceState` genuinely writes down. Removing it also cost nothing in coverage — the test
+named "remaining counts down and wraps" never reached the wrap, and its replacement does.
+`FoundCard.deckId` was the more interesting one: it crossed the JNI boundary, round-tripped in a
+test, and was then dropped. Kept cards are held in one list across every deck, so the kept-cards
+dialog was showing cards from different decks with nothing to tell them apart. It labels them
+now, which is what the field was carrying the deck id for all along.
+

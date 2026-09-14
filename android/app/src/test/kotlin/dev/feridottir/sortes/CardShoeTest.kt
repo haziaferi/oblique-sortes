@@ -48,16 +48,23 @@ class CardShoeTest {
         }
     }
 
+    /**
+     * The cursor is half of what `onSaveInstanceState` writes down, so where it
+     * sits after a pass is spent is the thing a rotation depends on.
+     */
     @Test
-    fun `remaining counts down and wraps`() {
+    fun `the cursor counts up and wraps`() {
         val shoe = fixedShoe()
-        assertEquals("a shoe has dealt nothing before its first draw", 0, shoe.remaining)
+        assertEquals("a shoe has no pass until its first draw", 0, shoe.cursor())
 
         shoe.draw()
-        assertEquals(deck.size - 1, shoe.remaining)
+        assertEquals(1, shoe.cursor())
 
         shoe.draw(deck.size - 1)
-        assertEquals(0, shoe.remaining)
+        assertEquals("a spent pass leaves the cursor at its end", deck.size, shoe.cursor())
+
+        shoe.draw()
+        assertEquals("a fresh pass starts the cursor over", 1, shoe.cursor())
     }
 
     @Test
@@ -87,7 +94,8 @@ class CardShoeTest {
         val restored = fixedShoe()
         restored.restore(first.pass(), first.cursor())
 
-        assertEquals(deck.size - 3, restored.remaining)
+        assertEquals("the restored shoe holds the pass it was given", first.pass(), restored.pass())
+        assertEquals(3, restored.cursor())
         val after = restored.draw(deck.size - 3)
         assertEquals("the pass was not completed exactly once", deck.toSet(), (before + after).toSet())
     }
@@ -97,7 +105,7 @@ class CardShoeTest {
         val shoe = fixedShoe()
         shoe.restore(deck, deck.size + 99)
 
-        assertEquals(0, shoe.remaining)
+        assertEquals("the cursor is clamped to the end of the pass", deck.size, shoe.cursor())
         assertEquals("it should refill rather than deal nothing", deck.size, shoe.draw(deck.size).size)
     }
 
@@ -106,6 +114,7 @@ class CardShoeTest {
         val shoe = fixedShoe()
         shoe.restore(deck, -5)
 
-        assertEquals(deck.size, shoe.remaining)
+        assertEquals("the cursor is clamped to the start of the pass", 0, shoe.cursor())
+        assertEquals("the whole pass is still there to deal", deck.toSet(), shoe.draw(deck.size).toSet())
     }
 }

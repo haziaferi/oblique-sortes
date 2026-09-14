@@ -373,6 +373,10 @@ class MainActivity : Activity() {
      * An id that no longer answers is shown as such rather than skipped: the
      * card was reworded or its deck left the build, and quietly dropping it
      * would look like the app had lost it.
+     *
+     * Kept cards are held in one list across every deck, so each is labelled
+     * with the deck it came from. The card alone does not say, and two decks
+     * cover neighbouring ground on purpose.
      */
     private fun showSaved() {
         val kept = keptCards(this)
@@ -380,15 +384,29 @@ class MainActivity : Activity() {
             Toast.makeText(this, R.string.saved_empty, Toast.LENGTH_SHORT).show()
             return
         }
-        val cards = kept.map { id -> cardById(id)?.card ?: getString(R.string.card_gone) }
-        offer(getString(R.string.saved), cards)
+        val found = kept.map(::cardById)
+        val cards = found.map { it?.card ?: getString(R.string.card_gone) }
+        val labels = found.zip(cards) { card, text ->
+            val deck = card?.deckId?.let(::deckNamed)
+            if (deck == null) text else getString(R.string.saved_entry, text, deck)
+        }
+        offer(getString(R.string.saved), cards, labels)
     }
 
-    /** Show a list of cards; picking one puts it on the card view. */
-    private fun offer(title: String, cards: List<String>) {
+    /** The name of the deck with this id, or `null` if this build has no such deck. */
+    private fun deckNamed(deckId: String): String? = decks.firstOrNull { it.id == deckId }?.name
+
+    /**
+     * Show a list of cards; picking one puts it on the card view.
+     *
+     * [labels] is what the list shows and [cards] is what a pick puts on the
+     * screen. The two differ for kept cards, where the deck is worth naming and
+     * is not part of the card.
+     */
+    private fun offer(title: String, cards: List<String>, labels: List<String> = cards) {
         AlertDialog.Builder(this)
             .setTitle(title)
-            .setItems(cards.toTypedArray()) { _, which -> show(cards[which]) }
+            .setItems(labels.toTypedArray()) { _, which -> show(cards[which]) }
             .setNegativeButton(android.R.string.cancel, null)
             .show()
     }
