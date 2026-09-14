@@ -200,29 +200,7 @@ jobs:
             # omits identity mappings, so a method kept and not renamed does not
             # appear in it at all. Read the shipped DEX instead.
             - name: the JNI methods survived R8
-              shell: bash
-              run: |
-                  set -euo pipefail
-                  apk=android/app/build/outputs/apk/release/app-release-unsigned.apk
-                  test -f "$apk" || { echo "no release APK to inspect" >&2; exit 1; }
-                  dexdump=$(find "${ANDROID_HOME:?}/build-tools" -type f -name 'dexdump*' | sort -V | tail -1)
-                  test -n "$dexdump" || { echo "no dexdump in the SDK build-tools" >&2; exit 1; }
-
-                  work=$(mktemp -d)
-                  unzip -q -o "$apk" 'classes*.dex' -d "$work"
-                  "$dexdump" -d "$work"/classes*.dex > "$work/dump.txt"
-
-                  # Only the Native class's own section is searched, so a name
-                  # occurring elsewhere in the DEX cannot make this pass by
-                  # accident.
-                  line=$(grep -nF "Class descriptor  : 'Ldev/feridottir/sortes/Native;'" "$work/dump.txt" | head -1 | cut -d: -f1)
-                  test -n "$line" || { echo "R8 dropped or renamed the Native class" >&2; exit 1; }
-                  section=$(tail -n "+$line" "$work/dump.txt" | sed -n '1,/source_file_idx/p')
-
-                  for method in decks draw; do
-                      echo "$section" | grep -qF "name          : '$method'" || { echo "R8 dropped or renamed Native.$method" >&2; exit 1; }
-                  done
-                  echo "Native.decks and Native.draw survived R8"
+              run: python3 tools/r8_check.py
 
     fmt:
         name: formatting check

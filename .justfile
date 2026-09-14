@@ -54,6 +54,11 @@ apk-release:
 app-check:
     ./android/gradlew -p android testDebugUnitTest lintDebug
 
+# Read the shipped release DEX and check every JNI method survived R8. The
+# same script CI runs, against the APK `apk-release` just built.
+r8-check:
+    python3 tools/r8_check.py
+
 # Run the same checks we run in CI. Requires nightly for the formatter.
 ci: test features shim
     cargo test --locked --doc --all-features

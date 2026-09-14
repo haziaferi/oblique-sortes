@@ -59,7 +59,7 @@ which does not link and so needs no NDK either.
 
 ## The JNI surface
 
-Two calls, each returning one flat string. Cards carry embedded newlines and
+Five calls, each returning one flat string. Cards carry embedded newlines and
 tabs, so the separators are ASCII control codes that cannot occur in card text:
 unit separator between fields, record separator between records.
 
@@ -68,8 +68,8 @@ unit separator between fields, record separator between records.
 | `Native.decks()` | one record per deck: `id US name US count US blurb US provenance` |
 | `Native.draw(id, n)` | `n` cards, drawn without replacement, RS-separated |
 
-The encoding is `encode_decks` and `encode_draw` in `jni/src/lib.rs`; the `extern` pair around
-them only marshals. That split is what makes the format testable — `cargo test -p sortes-jni`
+The encoding is the `encode_*` functions in `jni/src/lib.rs`; each `extern` wrapper around them
+only marshals. That split is what makes the format testable — `cargo test -p sortes-jni`
 runs on the host with no device and no NDK, and asserts the thing the protocol rests on: that no
 card, name, blurb or provenance line contains either separator. Kotlin's `loadDecks` drops a
 record short of its five fields rather than indexing into it; the two sides ship as separate
@@ -86,6 +86,9 @@ rather than a silent fallback in each consumer.
 - **`local.properties` needs forward slashes.** A `.properties` file reads
   `\U` as an escape, so a Windows path with backslashes parses as
   `C:UsersUser...` and the build fails with `Invalid file path`.
+| `Native.shuffled(id)` | the whole deck in shuffled order, RS-separated: one pass for a `CardShoe` |
+| `Native.cardId(id, card)` | that card's stable id, or empty if the deck does not hold it |
+| `Native.cardById(cardId)` | `deckId US card`, or empty if nothing answers to the id any more |
 - **The API level is one fact.** `nativeApiLevel` in `app/build.gradle.kts`
   picks the NDK linker (`aarch64-linux-android30-clang`) *and* sets `minSdk`.
   They cannot disagree.
@@ -105,17 +108,20 @@ rather than a silent fallback in each consumer.
   the card just restored. The listener returns when the reported position is the
   one already held — a real pick never is, and the guard cannot drift out of
   step the way a `restoring` flag would.
-- **The release build shrinks; the debug build does not.** R8 matches the two
-  JNI methods by name and cannot see that anything calls them. It does not in
+- **The release build shrinks; the debug build does not.** R8 matches the JNI
+  methods by name and cannot see that anything calls them. It does not in
   fact rename them, because the default `proguard-android-optimize.txt` already
   keeps `native <methods>` on every class — a release APK built with this
-  project's own keep rule removed still had both under their own names. So the
+  project's own keep rule removed still had them under their own names. So the
   rules in `proguard-rules.pro` are explicit restatements of a default AGP
   supplies, not the thing holding the app together; they are kept because that
   default is not this project's to guarantee, and because the failure is silent
   at build time and fatal on the device. What actually holds the line is the CI
-  step that reads the shipped DEX. `mapping.txt` cannot answer this: R8 omits
-  identity mappings, so a method kept and not renamed does not appear in it.
+  step that reads the shipped DEX, and it reads the method list out of
+  `Native.kt` rather than carrying its own copy — a copy is what let three
+  entry points ship unchecked once already. `mapping.txt` cannot answer this:
+  R8 omits identity mappings, so a method kept and not renamed does not appear
+  in it.
 - **The shim is built with `--profile android`, not `--release`.** The workspace
   root sets `panic = "abort"` for `[profile.release]`, and Cargo applies a
   profile to every member — so the shim's `catch_unwind` guards caught nothing

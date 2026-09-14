@@ -339,6 +339,8 @@ Preserve `println!` of the raw string so the `\n\t` convention keeps rendering f
 - ✅ `android/app/src/test/kotlin/` — the app's first tests. The decoding and the shoe are plain
   Kotlin over strings, so they run on the JVM with no device; `Native.kt` splits each native call
   from the parsing around it for exactly that reason.
+- ✅ `tools/r8_check.py` — the shipped DEX read back, every JNI method's name found in it. The
+  same check CI runs, as a script so it runs locally too.
 - ✅ `README.md` — deck table, per-deck attribution, provenance policy, install instructions.
 - ✅ `.github/workflows/release.yml` — `BINARY_NAME` follows `[[bin]]`, since that is what the
   pipeline uploads and hands to the Homebrew tap.
@@ -497,3 +499,13 @@ moved aside rather than opening the next, which a test checks across sixty-four 
 A seed is only as stable as the decks. The same seed deals the same cards for as long as the
 deck holds the same cards; one added or reworded reshuffles every seed with it. That is stated
 in the API docs, in `--help` and in the README rather than promised away.
+**Three JNI entry points were shipping unverified against R8.** The CI step that reads the
+shipped DEX was written when the surface was two calls, and it named them: `for method in decks
+draw`. Adding the shoe, the card ids and the search grew the surface to five, and the loop stayed
+as it was — so `shuffled`, `cardId` and `cardById` were covered by nothing, while four places in
+prose went on saying "two". The failure that step exists to catch is invisible at build time and
+fatal on the device, so it must not depend on a list anyone has to remember to extend: it now
+reads the method names out of `Native.kt`, and grows with the surface. The keep rule in
+`proguard-rules.pro` was already a wildcard over the class and so had not gone stale with it,
+which is why nothing broke while the check was blind.
+
