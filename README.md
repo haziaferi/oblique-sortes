@@ -186,7 +186,8 @@ deck whole, as `--find ""` does — keep the ones worth keeping, share one or
 long-press to copy it. Draws come from a shoe, so working through a deck
 does not hand back cards already seen, and a drawn card survives a rotation
 because it cannot be drawn again. There is a home-screen widget that shows one
-card and redraws it when tapped. See [android/README.md](./android/README.md).
+card, redraws it when the card is tapped, and opens the app when the deck name
+under it is. See [android/README.md](./android/README.md).
 
 ## Credit
 

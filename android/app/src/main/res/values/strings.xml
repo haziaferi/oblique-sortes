@@ -36,6 +36,9 @@
     <string name="widget_description">One card on the home screen. Tap it to draw another.</string>
     <string name="widget_loading">Tap to draw a card.</string>
     <string name="widget_unavailable">The decks did not load.</string>
+    <!-- The deck name under the card opens the app; the card itself redraws. A
+         screen reader hears the name from the text, so this says what the tap does. -->
+    <string name="widget_open">Open sortes</string>
 
     <plurals name="matches">
         <item quantity="one">%1$d matching</item>

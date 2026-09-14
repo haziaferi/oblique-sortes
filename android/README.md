@@ -154,7 +154,8 @@ rather than a silent fallback in each consumer.
   launcher's. So the Activity keeps a `CardShoe` and deals a whole shuffled
   pass, while the widget asks for two cards and takes the one it is not already
   showing — which covers the repeat anyone would notice, the same card twice
-  from one tap to the next.
+  from one tap to the next. The card redraws on a tap; the deck name beneath it
+  opens the app, which is otherwise unreachable from the home screen.
 - **Kept cards are stored as ids, not as text.** An id stops resolving when its
   card is reworded or its deck leaves the build, and the app says so. Text could
   not tell the difference, and would show the old wording for ever.

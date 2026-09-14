@@ -9,7 +9,9 @@ import android.content.Intent
 import android.widget.RemoteViews
 
 /**
- * One card on the home screen. Tap it and it draws another.
+ * One card on the home screen. Tap the card and it draws another; tap the deck
+ * name beneath it and the app opens, which is the only way from the home screen
+ * into it.
  *
  * The widget draws from whichever deck the app was last reading, because it has
  * no screen of its own to ask on. It never redraws by itself: a card that
@@ -55,7 +57,10 @@ class CardWidget : AppWidgetProvider() {
         }
 
         views.setOnClickPendingIntent(R.id.widget_card, drawIntent(context))
-        views.setOnClickPendingIntent(R.id.widget_deck, drawIntent(context))
+        // The deck name is the way in. A screen reader hears the deck's name
+        // from the text; the description is what says the tap goes somewhere.
+        views.setOnClickPendingIntent(R.id.widget_deck, openIntent(context))
+        views.setContentDescription(R.id.widget_deck, context.getString(R.string.widget_open))
         return views
     }
 
@@ -89,6 +94,14 @@ class CardWidget : AppWidgetProvider() {
         // IMMUTABLE because nothing is ever filled in by the receiver; the flag
         // is required from Android 12 and this app targets well past that.
         return PendingIntent.getBroadcast(context, 0, intent, PendingIntent.FLAG_IMMUTABLE)
+    }
+
+    private fun openIntent(context: Context): PendingIntent {
+        // A request code of its own. PendingIntents that compare equal by intent
+        // and code are one object; keeping the codes apart means the two this
+        // widget hands out never can be, whatever the intents come to hold.
+        val intent = Intent(context, MainActivity::class.java)
+        return PendingIntent.getActivity(context, 1, intent, PendingIntent.FLAG_IMMUTABLE)
     }
 
     internal companion object {
