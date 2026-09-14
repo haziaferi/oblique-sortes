@@ -390,8 +390,10 @@ Preserve `println!` of the raw string so the `\n\t` convention keeps rendering f
    by taste:
 
    - **`attention` vs `absurd`** — both short and declarative. The person rule splits them:
-     `absurd` must say "you" in every card, `attention` may never say it. Checked across the
-     built decks: 86 of 86 `absurd` cards contain it, 0 of 93 `attention` cards do.
+     `absurd` must say "you" in every card, `attention` may never say it. Both halves are crate
+     tests now. Only the `attention` half was, which left the rule that separates the two decks
+     enforced in one direction and asserted in the other; the 86-of-86 count that stood in for
+     the `absurd` half came from a generator this repo does not carry and could not re-run.
    - **`memento` vs `absurd`** — both deal in finitude. *Mood* splits them: `absurd` provokes,
      asking and instructing; `memento` only states. `memento` carries 0 question marks against
      `absurd`'s 15, and refuses any card opening with an imperative verb.
@@ -509,3 +511,9 @@ reads the method names out of `Native.kt`, and grows with the surface. The keep 
 `proguard-rules.pro` was already a wildcard over the class and so had not gone stale with it,
 which is why nothing broke while the check was blind.
 
+**The completions' contract with `--list` was prose only.** The three shell scripts read deck ids
+out of `--list` rather than keeping a copy, on one shared rule — a deck line is one whose card
+count is a number, and the marker on the default deck shifts the columns. `completions/README.md`
+said so; nothing checked it. A change to the shape of that output would have left every shell
+quietly offering no deck names at all. `tests/cli.rs` now applies that rule to the binary's real
+output and asserts it recovers exactly the decks that are compiled in.

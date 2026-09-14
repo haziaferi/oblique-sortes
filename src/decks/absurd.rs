@@ -9,8 +9,14 @@
 //! their formulations are; any card that drifted toward a borrowed phrasing
 //! was rewritten before it went in.
 //!
-//! The deck addresses you directly and does not soften. It is meant to push
-//! toward acting, which is what the tradition was always for.
+//! The deck addresses you directly and does not soften. Every card says `you`
+//! in one form or another, and the crate's tests enforce it - the mirror of the
+//! rule on `attention`, which may never say it. That one rule is what keeps two
+//! short declarative decks from becoming one. Not softening is editorial, and
+//! no test holds it.
+//!
+//! It is meant to push toward acting, which is what the tradition was always
+//! for.
 
 use crate::{Deck, Provenance};
 

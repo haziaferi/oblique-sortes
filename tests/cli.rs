@@ -197,6 +197,39 @@ fn listing_names_every_deck_and_marks_the_default() {
     );
 }
 
+/// The three completion scripts read deck ids out of `--list` rather than
+/// keeping a copy, with one rule between them: a deck line is one whose card
+/// count is a number, and the marker on the default deck shifts every column by
+/// one. That rule is the whole contract between `list_decks` and
+/// `completions/`, and nothing but this held it — a change to the shape of
+/// `--list` would leave every shell quietly offering no deck names at all.
+#[test]
+fn list_output_still_parses_the_way_the_completions_read_it() {
+    let output = run(&["--list"]);
+    assert!(output.status.success());
+    let printed = stdout(&output);
+
+    let ids: Vec<&str> = printed
+        .lines()
+        .filter_map(|line| {
+            let mut fields = line.split_whitespace();
+            let first = fields.next()?;
+            let (id, count) = if first == "*" {
+                (fields.next()?, fields.next()?)
+            } else {
+                (first, fields.next()?)
+            };
+            count.parse::<usize>().ok().map(|_| id)
+        })
+        .collect();
+
+    let expected: Vec<&str> = sortes::decks().iter().map(|deck| deck.id).collect();
+    assert_eq!(
+        ids, expected,
+        "the completions would read these ids out of --list, and they are not the decks"
+    );
+}
+
 #[test]
 fn about_says_what_a_deck_is_and_where_it_came_from() {
     for deck in sortes::decks() {

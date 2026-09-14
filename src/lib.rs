@@ -685,14 +685,14 @@ mod tests {
     // docs.
 
     /// Whether `card` uses `word` as a whole word, ignoring case.
-    #[cfg(any(feature = "attention", feature = "dramatis"))]
+    #[cfg(any(feature = "absurd", feature = "attention", feature = "dramatis"))]
     fn uses_word(card: &str, word: &str) -> bool {
         card.split(|c: char| !c.is_alphanumeric() && c != '\'')
             .any(|found| found.eq_ignore_ascii_case(word))
     }
 
     /// What a deck that points away from the reader must never say.
-    #[cfg(any(feature = "attention", feature = "dramatis"))]
+    #[cfg(any(feature = "absurd", feature = "attention", feature = "dramatis"))]
     const SECOND_PERSON: &[&str] = &["you", "your", "yours", "yourself", "yourselves"];
 
     /// `attention` points outward: no card addresses the reader, and none asks
@@ -708,6 +708,22 @@ mod tests {
                     "attention card addresses the reader: {card:?}"
                 );
             }
+        }
+    }
+
+    /// `absurd` addresses the reader in every card, which is the mirror of
+    /// `attention_points_outward`. The two decks are both short and both
+    /// declarative, and this one rule is what keeps them from collapsing into
+    /// each other: one must say "you", the other may never. Only the never had
+    /// a test.
+    #[cfg(feature = "absurd")]
+    #[test]
+    fn absurd_addresses_the_reader() {
+        for card in crate::decks::absurd::DECK.cards {
+            assert!(
+                SECOND_PERSON.iter().any(|pronoun| uses_word(card, pronoun)),
+                "absurd card does not address the reader: {card:?}"
+            );
         }
     }
 
