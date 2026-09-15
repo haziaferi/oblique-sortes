@@ -545,6 +545,21 @@ macOS ships — reads the argument after `-i` as a backup suffix. All three bump
 against a copy of the real manifest and produce 0.2.1, 0.3.0 and 1.0.0, changing that one line and
 nothing else.
 
+**The first device walk, on the OnePlus 9 Pro (Android 14, 360×804dp).** Three defects no
+reconstruction could show, all measured from screenshots rather than judged. Every line the
+Activity built in code was `textColorSecondary`, because a bare `TextView` takes the default
+text appearance: `#837274` on `#FEEDEE` for the title (4.0:1) and the card (3.6:1), and 2.5:1 for
+the three dimmed lines, against an assumed 16.7:1. `text()` now sets `textColorPrimary`; measured
+after: 15.2, 13.5 and 6.3:1. The status bar drew white on the light ground (1.0:1), because
+edge-to-edge leaves the icon colour to the window; it follows the ground's luminance now (15.8:1).
+And in landscape the card was 10dp tall, the fixed chrome having taken the 360dp; below 480dp of
+height the secondary lines yield. What the walk confirmed as built: "Saved" on one line at 72dp,
+every button 48dp, the empty-search browse titled by deck and in `--all` order, Keep→Kept and the
+Saved list labelling each card's deck, long-press copying (pasted back into Find), the card
+surviving a night-mode recreate and a rotation, dark mode at 15.2/8.3/13.2:1. Not yet walked: the
+widget, which no `adb` can place on a launcher — the provider is registered at 180×200dp and
+waits for a hand.
+
 **The first design critique, and what it could fix without a decision.** Measured from the sources
 and a rendered reconstruction, no device. Two findings were high, both in the widget and both from
 the previous two days' work: at its 110dp minimum a long card was cut after two and a half lines

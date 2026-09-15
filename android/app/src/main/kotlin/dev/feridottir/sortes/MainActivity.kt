@@ -16,6 +16,7 @@ import android.view.View
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import android.view.ViewGroup.LayoutParams.WRAP_CONTENT
 import android.view.WindowInsets
+import android.view.WindowInsetsController
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import android.widget.Button
@@ -54,6 +55,9 @@ class MainActivity : Activity() {
 
         /** Middle dot, between a deck name and its card count. */
         const val DOT = "·"
+
+        /** Below this window height the secondary lines yield to the card. A phone on its side is 360. */
+        const val COMPACT_HEIGHT_DP = 480
     }
 
     private lateinit var decks: List<Deck>
@@ -81,6 +85,7 @@ class MainActivity : Activity() {
         super.onCreate(savedInstanceState)
         // The screen carries its own title; the platform one would say it twice.
         actionBar?.hide()
+        lightSystemBars()
 
         decks = try {
             loadDecks()
@@ -142,16 +147,26 @@ class MainActivity : Activity() {
             orientation = LinearLayout.VERTICAL
             setPadding(dp(20), dp(16), dp(20), dp(16))
         }
+        // A phone on its side is 360dp tall. The fixed chrome -- title, picker,
+        // two button rows -- takes most of that, and the three secondary lines
+        // took the rest, so the card, which the screen is for, was squeezed to
+        // nothing. When the window is short they yield to it.
+        val compact = resources.configuration.screenHeightDp < COMPACT_HEIGHT_DP
+        val secondary = if (compact) View.GONE else View.VISIBLE
 
         column.addView(text("sortes", 22f, bold = true).apply { isAccessibilityHeading = true })
         column.addView(
             text("Cards for when the work will not move.", 14f, dim = true).apply {
                 setPadding(0, dp(4), 0, dp(16))
+                visibility = secondary
             },
         )
         column.addView(deckSpinner())
 
-        blurbView = text("", 13f, dim = true).apply { setPadding(0, dp(8), 0, 0) }
+        blurbView = text("", 13f, dim = true).apply {
+            setPadding(0, dp(8), 0, 0)
+            visibility = secondary
+        }
         column.addView(blurbView)
 
         cardView = text("", 20f).apply {
@@ -191,7 +206,10 @@ class MainActivity : Activity() {
 
         column.addView(buttonRows())
 
-        provenanceView = text("", 12f, dim = true).apply { setPadding(0, dp(16), 0, 0) }
+        provenanceView = text("", 12f, dim = true).apply {
+            setPadding(0, dp(16), 0, 0)
+            visibility = secondary
+        }
         column.addView(provenanceView)
 
         // targetSdk 35+ makes the app edge-to-edge whether it asks or not, so
@@ -458,12 +476,35 @@ class MainActivity : Activity() {
      * over its background, so it is a shade darker on a light theme and a
      * shade lighter on a dark one without naming either.
      */
-    private fun cardSurface(): GradientDrawable {
+    /**
+     * Edge-to-edge means the status bar draws over this screen's own ground,
+     * and the system picks its icon colour for the app's window, not for the
+     * ground -- on a light theme the clock came out white on pink. Ask for
+     * dark icons whenever the ground is light, by its luminance, so the answer
+     * follows whatever theme the device supplies.
+     */
+    private fun lightSystemBars() {
+        val ground = ground
+        val luminance = (0.299 * Color.red(ground) + 0.587 * Color.green(ground) + 0.114 * Color.blue(ground)) / 255
+        val flags = WindowInsetsController.APPEARANCE_LIGHT_STATUS_BARS or
+            WindowInsetsController.APPEARANCE_LIGHT_NAVIGATION_BARS
+        window.insetsController?.setSystemBarsAppearance(if (luminance > 0.5) flags else 0, flags)
+    }
+
+    /** A colour attribute of the theme, resolved through its state list if it has one. */
+    private fun themeColor(attribute: Int): Int {
         val values = TypedValue()
-        theme.resolveAttribute(android.R.attr.colorBackground, values, true)
-        val ground = values.data
-        theme.resolveAttribute(android.R.attr.textColorPrimary, values, true)
-        val ink = if (values.resourceId != 0) getColor(values.resourceId) else values.data
+        theme.resolveAttribute(attribute, values, true)
+        return if (values.resourceId != 0) getColor(values.resourceId) else values.data
+    }
+
+    /** The ink and the ground the theme gives this screen. */
+    private val ink: Int get() = themeColor(android.R.attr.textColorPrimary)
+    private val ground: Int get() = themeColor(android.R.attr.colorBackground)
+
+    private fun cardSurface(): GradientDrawable {
+        val ink = ink
+        val ground = ground
         val tint = (0.06f * 255).toInt()
         val surface = Color.argb(
             255,
@@ -490,9 +531,17 @@ class MainActivity : Activity() {
             )
         }
 
+    /**
+     * A TextView built in code takes the platform's default text appearance,
+     * whose colour is `textColorSecondary`, not primary -- on the OnePlus that
+     * was #837274 where the theme's primary is black, and dimming it again
+     * put every secondary line at 2.5:1. The primary colour is set outright,
+     * so `dim` is the one step down it was meant to be.
+     */
     private fun text(value: String, sizeSp: Float, bold: Boolean = false, dim: Boolean = false): TextView =
         TextView(this).apply {
             text = value
+            setTextColor(ink)
             setTextSize(TypedValue.COMPLEX_UNIT_SP, sizeSp)
             if (bold) setTypeface(typeface, Typeface.BOLD)
             if (dim) alpha = DIM

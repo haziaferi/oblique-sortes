@@ -111,6 +111,21 @@ rather than a silent fallback in each consumer.
 - **The API level is one fact.** `nativeApiLevel` in `app/build.gradle.kts`
   picks the NDK linker (`aarch64-linux-android30-clang`) *and* sets `minSdk`.
   They cannot disagree.
+- **A `TextView` built in code is not in the primary colour.** It takes the
+  platform's default text appearance, whose colour is `textColorSecondary`. On
+  the OnePlus that was `#837274` where the theme's primary is black, every line
+  the Activity built itself was that grey, and dimming it again put the
+  subtitle, blurb and provenance at 2.5:1 — measured on the device, invisible in
+  any reconstruction that assumed the theme. `text()` sets `textColorPrimary`
+  outright.
+- **Edge-to-edge means the status bar draws over the app's own ground, and
+  the system picks its icon colour for the window, not the ground.** On the
+  light theme the clock came out white on pink, 1.0:1. `lightSystemBars()` asks
+  for dark icons whenever the ground's luminance says it is light, so the answer
+  follows whatever theme the device supplies.
+- **A phone on its side is 360dp tall.** The fixed chrome took all of it and the
+  card, on a weight of 1, was squeezed to 10dp. Below 480dp of window height the
+  subtitle, blurb and provenance are `GONE` and the card gets the room.
 - **Edge-to-edge is not optional at `targetSdk 35+`.** `MainActivity` pads
   itself by the system-bar and display-cutout insets; without that the title
   sits under the status bar and the buttons under the gesture pill.
