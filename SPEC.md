@@ -555,8 +555,12 @@ label's 48dp box (200dp), held by a test whose assertion carries the arithmetic;
 carries both facts. The mechanical rest went in with it: the browse dialog titled by deck rather
 than "156 matching", the failure screen as a sentence over the exception rather than the
 exception alone, a fading edge on the scroll, 12sp where there was 11, two directive empty states,
-spacing on a 4dp grid. Three findings are decisions and wait: the title/card hierarchy, the
-Keep/Kept/Kept-cards collision, and which handler the card's long-press should own.
+spacing on a 4dp grid. Three findings were decisions, taken the same day: the card sits on a tonal
+surface — the theme's text colour at six percent over its background, one 16dp radius, no shadow —
+and the app name recedes to 22sp so the card is the first thing read; the list of kept cards is
+"Saved", so the row no longer reads Kept cards · Kept; and long-press owns copy outright, with
+`setTextIsSelectable` gone, because a handled long-click suppresses the TextView's own selection and
+the comment saying the two coexisted was not true.
 
 **Nothing held the prose to the code.** The tests hold the code to what the prose says about
 cards and draws; the prose itself could say anything about the code and pass. Two audits found

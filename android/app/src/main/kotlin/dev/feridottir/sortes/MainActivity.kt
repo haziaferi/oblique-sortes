@@ -6,7 +6,9 @@ import android.content.ActivityNotFoundException
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Intent
+import android.graphics.Color
 import android.graphics.Typeface
+import android.graphics.drawable.GradientDrawable
 import android.os.Bundle
 import android.util.TypedValue
 import android.view.Gravity
@@ -141,7 +143,7 @@ class MainActivity : Activity() {
             setPadding(dp(20), dp(16), dp(20), dp(16))
         }
 
-        column.addView(text("sortes", 30f, bold = true).apply { isAccessibilityHeading = true })
+        column.addView(text("sortes", 22f, bold = true).apply { isAccessibilityHeading = true })
         column.addView(
             text("Cards for when the work will not move.", 14f, dim = true).apply {
                 setPadding(0, dp(4), 0, dp(16))
@@ -155,13 +157,15 @@ class MainActivity : Activity() {
         cardView = text("", 20f).apply {
             typeface = Typeface.MONOSPACE
             setLineSpacing(dp(4).toFloat(), 1f)
-            setTextIsSelectable(true)
             gravity = Gravity.CENTER_VERTICAL
             // A draw replaces the card in place, with no navigation to notice.
             // Announcing it is the only way a screen reader hears the new card.
             accessibilityLiveRegion = View.ACCESSIBILITY_LIVE_REGION_POLITE
             // The button row holds all it can, and long-press is where a copy
-            // lives on Android anyway. Selection copy still works alongside it.
+            // lives on Android anyway. The card is not selectable: a handled
+            // long-click suppresses the TextView's own selection, so the two
+            // could never share the gesture, and one gesture with one meaning
+            // beats a second that only double-tap reaches.
             setOnLongClickListener {
                 copy()
                 true
@@ -169,7 +173,9 @@ class MainActivity : Activity() {
         }
         // The card takes whatever room is left, so the buttons sit at the foot
         // of the screen instead of floating in the middle of it. It scrolls on
-        // its own for the long cards and for a five-card draw.
+        // its own for the long cards and for a five-card draw. The surface is
+        // what makes the text read as a card lying on the screen rather than
+        // text floating in it: one tonal panel, one radius, no shadow.
         column.addView(
             ScrollView(this).apply {
                 addView(cardView, LinearLayout.LayoutParams(MATCH_PARENT, WRAP_CONTENT))
@@ -177,9 +183,10 @@ class MainActivity : Activity() {
                 // The platform's own sign that there is more below: a
                 // five-card draw scrolls, and nothing else said so.
                 isVerticalFadingEdgeEnabled = true
-                setPadding(0, dp(20), 0, dp(20))
+                background = cardSurface()
+                setPadding(dp(16), dp(20), dp(16), dp(20))
             },
-            LinearLayout.LayoutParams(MATCH_PARENT, 0, 1f),
+            LinearLayout.LayoutParams(MATCH_PARENT, 0, 1f).apply { topMargin = dp(16) },
         )
 
         column.addView(buttonRows())
@@ -446,6 +453,30 @@ class MainActivity : Activity() {
      * person can act on, and beneath it the detail a bug report needs, in the
      * card's own face so it reads as evidence rather than as the message.
      */
+    /**
+     * A tonal surface for the card: the theme's text colour at six percent
+     * over its background, so it is a shade darker on a light theme and a
+     * shade lighter on a dark one without naming either.
+     */
+    private fun cardSurface(): GradientDrawable {
+        val values = TypedValue()
+        theme.resolveAttribute(android.R.attr.colorBackground, values, true)
+        val ground = values.data
+        theme.resolveAttribute(android.R.attr.textColorPrimary, values, true)
+        val ink = if (values.resourceId != 0) getColor(values.resourceId) else values.data
+        val tint = (0.06f * 255).toInt()
+        val surface = Color.argb(
+            255,
+            (Color.red(ink) * tint + Color.red(ground) * (255 - tint)) / 255,
+            (Color.green(ink) * tint + Color.green(ground) * (255 - tint)) / 255,
+            (Color.blue(ink) * tint + Color.blue(ground) * (255 - tint)) / 255,
+        )
+        return GradientDrawable().apply {
+            cornerRadius = dp(16).toFloat()
+            setColor(surface)
+        }
+    }
+
     private fun failureView(detail: String): View =
         LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
