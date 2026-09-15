@@ -17,7 +17,7 @@
     <string name="kept_toast">Card kept</string>
     <string name="unkept_toast">Card let go</string>
     <string name="saved">Kept cards</string>
-    <string name="saved_empty">No cards kept yet.</string>
+    <string name="saved_empty">No cards kept yet. Keep holds the card on screen for later.</string>
     <!-- One kept card in the list, with the deck it came from under it. Kept
          cards are held in one list across every deck, and the card itself does
          not say which. -->
@@ -30,7 +30,12 @@
          command line, and is how the whole deck is browsed. The hint is the only
          thing that says so. -->
     <string name="find_hint">Words on the card, or nothing for all</string>
-    <string name="no_matches">Nothing matched.</string>
+    <string name="no_matches">Nothing matched. Try one word.</string>
+
+    <!-- The screen shown when the decks cannot be reached. The sentence is what a
+         person can act on; the detail beneath it is for a bug report. -->
+    <string name="native_failed">sortes could not load its decks on this device. Reinstalling usually fixes it.</string>
+    <string name="native_no_decks">The native library loaded but reports no decks.</string>
 
     <string name="widget_label">A card</string>
     <string name="widget_description">One card on the home screen. Tap it to draw another.</string>

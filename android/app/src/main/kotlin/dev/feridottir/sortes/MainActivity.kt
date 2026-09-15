@@ -83,12 +83,12 @@ class MainActivity : Activity() {
         decks = try {
             loadDecks()
         } catch (error: UnsatisfiedLinkError) {
-            setContentView(failureView("The native library did not load.\n\n$error"))
+            setContentView(failureView(error.toString()))
             return
         }
 
         if (decks.isEmpty()) {
-            setContentView(failureView("The native library loaded but reports no decks."))
+            setContentView(failureView(getString(R.string.native_no_decks)))
             return
         }
 
@@ -144,17 +144,17 @@ class MainActivity : Activity() {
         column.addView(text("sortes", 30f, bold = true).apply { isAccessibilityHeading = true })
         column.addView(
             text("Cards for when the work will not move.", 14f, dim = true).apply {
-                setPadding(0, dp(2), 0, dp(16))
+                setPadding(0, dp(4), 0, dp(16))
             },
         )
         column.addView(deckSpinner())
 
-        blurbView = text("", 13f, dim = true).apply { setPadding(0, dp(10), 0, 0) }
+        blurbView = text("", 13f, dim = true).apply { setPadding(0, dp(8), 0, 0) }
         column.addView(blurbView)
 
         cardView = text("", 20f).apply {
             typeface = Typeface.MONOSPACE
-            setLineSpacing(dp(5).toFloat(), 1f)
+            setLineSpacing(dp(4).toFloat(), 1f)
             setTextIsSelectable(true)
             gravity = Gravity.CENTER_VERTICAL
             // A draw replaces the card in place, with no navigation to notice.
@@ -174,6 +174,9 @@ class MainActivity : Activity() {
             ScrollView(this).apply {
                 addView(cardView, LinearLayout.LayoutParams(MATCH_PARENT, WRAP_CONTENT))
                 isFillViewport = true
+                // The platform's own sign that there is more below: a
+                // five-card draw scrolls, and nothing else said so.
+                isVerticalFadingEdgeEnabled = true
                 setPadding(0, dp(20), 0, dp(20))
             },
             LinearLayout.LayoutParams(MATCH_PARENT, 0, 1f),
@@ -181,7 +184,7 @@ class MainActivity : Activity() {
 
         column.addView(buttonRows())
 
-        provenanceView = text("", 11f, dim = true).apply { setPadding(0, dp(16), 0, 0) }
+        provenanceView = text("", 12f, dim = true).apply { setPadding(0, dp(16), 0, 0) }
         column.addView(provenanceView)
 
         // targetSdk 35+ makes the app edge-to-edge whether it asks or not, so
@@ -196,7 +199,7 @@ class MainActivity : Activity() {
     }
 
     private fun deckSpinner(): Spinner {
-        val labels = decks.map { "${it.name}  ${DOT}  ${it.count} cards" }
+        val labels = decks.map { it.label() }
         return Spinner(this).apply {
             adapter = ArrayAdapter(this@MainActivity, android.R.layout.simple_spinner_dropdown_item, labels)
             contentDescription = getString(R.string.deck_label)
@@ -252,7 +255,7 @@ class MainActivity : Activity() {
     /** One row of equally-weighted buttons. */
     private fun row(vararg actions: Pair<String, () -> Unit>, existing: Button? = null): View {
         val row = LinearLayout(this).apply { orientation = LinearLayout.HORIZONTAL }
-        val weighted = { LinearLayout.LayoutParams(0, WRAP_CONTENT, 1f).apply { marginEnd = dp(6) } }
+        val weighted = { LinearLayout.LayoutParams(0, WRAP_CONTENT, 1f).apply { marginEnd = dp(8) } }
         actions.forEach { (label, action) ->
             row.addView(
                 Button(this).apply {
@@ -352,11 +355,16 @@ class MainActivity : Activity() {
             .setTitle(getString(R.string.find_in, deck.name))
             .setView(input)
             .setPositiveButton(R.string.find) { _, _ ->
-                val matches = deck.matching(input.text.toString())
+                val needle = input.text.toString()
+                val matches = deck.matching(needle)
                 if (matches.isEmpty()) {
                     Toast.makeText(this, R.string.no_matches, Toast.LENGTH_SHORT).show()
                 } else {
-                    offer(resources.getQuantityString(R.plurals.matches, matches.size, matches.size), matches)
+                    // An empty box is a browse, not a search, and its title says
+                    // the deck rather than "156 matching".
+                    val title = if (needle.isBlank()) deck.label()
+                    else resources.getQuantityString(R.plurals.matches, matches.size, matches.size)
+                    offer(title, matches)
                 }
             }
             .setNegativeButton(android.R.string.cancel, null)
@@ -430,10 +438,25 @@ class MainActivity : Activity() {
         }
     }
 
-    private fun failureView(message: String): View =
-        text(message, 16f).apply {
-            gravity = Gravity.CENTER
+    /** The deck's name and card count, as the picker and the browse title both show it. */
+    private fun Deck.label(): String = "$name  $DOT  $count cards"
+
+    /**
+     * What the screen shows when the decks cannot be reached: a sentence a
+     * person can act on, and beneath it the detail a bug report needs, in the
+     * card's own face so it reads as evidence rather than as the message.
+     */
+    private fun failureView(detail: String): View =
+        LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
             setPadding(dp(24), dp(64), dp(24), dp(24))
+            addView(text(getString(R.string.native_failed), 16f).apply { gravity = Gravity.CENTER })
+            addView(
+                text(detail, 12f, dim = true).apply {
+                    typeface = Typeface.MONOSPACE
+                    setPadding(0, dp(24), 0, 0)
+                },
+            )
         }
 
     private fun text(value: String, sizeSp: Float, bold: Boolean = false, dim: Boolean = false): TextView =

@@ -545,6 +545,19 @@ macOS ships — reads the argument after `-i` as a backup suffix. All three bump
 against a copy of the real manifest and produce 0.2.1, 0.3.0 and 1.0.0, changing that one line and
 nothing else.
 
+**The first design critique, and what it could fix without a decision.** Measured from the sources
+and a rendered reconstruction, no device. Two findings were high, both in the widget and both from
+the previous two days' work: at its 110dp minimum a long card was cut after two and a half lines
+with no ellipsis, because `ellipsize` fires only at `maxLines`; and the deck name — since it opens
+the app — was a 21dp tap target whose `contentDescription` replaced the deck's name for TalkBack.
+The card now autosizes 15sp→12sp and the floor is what the longest card needs at 12sp with the
+label's 48dp box (200dp), held by a test whose assertion carries the arithmetic; the description
+carries both facts. The mechanical rest went in with it: the browse dialog titled by deck rather
+than "156 matching", the failure screen as a sentence over the exception rather than the
+exception alone, a fading edge on the scroll, 12sp where there was 11, two directive empty states,
+spacing on a 4dp grid. Three findings are decisions and wait: the title/card hierarchy, the
+Keep/Kept/Kept-cards collision, and which handler the card's long-press should own.
+
 **Nothing held the prose to the code.** The tests hold the code to what the prose says about
 cards and draws; the prose itself could say anything about the code and pass. Two audits found
 the drift by hand — "two calls" after the JNI surface had five, "14 CLI tests" after there were
