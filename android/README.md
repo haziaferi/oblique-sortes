@@ -155,7 +155,14 @@ rather than a silent fallback in each consumer.
   pass, while the widget asks for two cards and takes the one it is not already
   showing — which covers the repeat anyone would notice, the same card twice
   from one tap to the next. The card redraws on a tap; the deck name beneath it
-  opens the app, which is otherwise unreachable from the home screen.
+  opens the app, which is otherwise unreachable from the home screen, so it is
+  a 48dp target and its description carries the deck's name as well as what the
+  tap does.
+- **The widget's floor is set by its longest card.** `ellipsize` fires only at
+  `maxLines`, so a widget shorter than the text simply clips it, with no sign
+  it was cut. The card autosizes between 15sp and 12sp, and `minHeight` is what
+  the 127-character card needs at 12sp plus the padding and the label's box —
+  200dp. `ManifestAgreementTest` holds the three numbers together.
 - **Kept cards are stored as ids, not as text.** An id stops resolving when its
   card is reworded or its deck leaves the build, and the app says so. Text could
   not tell the difference, and would show the old wording for ever.

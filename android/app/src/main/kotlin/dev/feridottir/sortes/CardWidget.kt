@@ -57,10 +57,15 @@ class CardWidget : AppWidgetProvider() {
         }
 
         views.setOnClickPendingIntent(R.id.widget_card, drawIntent(context))
-        // The deck name is the way in. A screen reader hears the deck's name
-        // from the text; the description is what says the tap goes somewhere.
+        // The deck name is the way in. A contentDescription replaces the text
+        // for a screen reader rather than adding to it, so it has to carry the
+        // deck's name as well as what the tap does.
         views.setOnClickPendingIntent(R.id.widget_deck, openIntent(context))
-        views.setContentDescription(R.id.widget_deck, context.getString(R.string.widget_open))
+        views.setContentDescription(
+            R.id.widget_deck,
+            if (drawn == null) context.getString(R.string.widget_open)
+            else context.getString(R.string.widget_open_deck, drawn.deckName),
+        )
         return views
     }
 

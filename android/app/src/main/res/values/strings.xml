@@ -37,8 +37,11 @@
     <string name="widget_loading">Tap to draw a card.</string>
     <string name="widget_unavailable">The decks did not load.</string>
     <!-- The deck name under the card opens the app; the card itself redraws. A
-         screen reader hears the name from the text, so this says what the tap does. -->
-    <string name="widget_open">Open sortes</string>
+         contentDescription replaces the text for a screen reader, so the one
+         with a deck carries the deck's name too; the other is for the widget
+         that could not load a deck. -->
+    <string name="widget_open_deck">%1$s. Opens sortes.</string>
+    <string name="widget_open">Opens sortes.</string>
 
     <plurals name="matches">
         <item quantity="one">%1$d matching</item>

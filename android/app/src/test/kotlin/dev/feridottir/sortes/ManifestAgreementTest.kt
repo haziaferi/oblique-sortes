@@ -76,6 +76,33 @@ class ManifestAgreementTest {
         assertEquals("the app asks for no permissions", 0, manifest.elements("uses-permission").size)
     }
 
+    /**
+     * The deck name is the tap that opens the app, so it is a 48dp target; the
+     * card autosizes no smaller than 12sp; and the widget's floor is what the
+     * longest card needs at that size -- seven lines of 12sp mono at 180dp wide,
+     * 17.4dp each with the 3dp extra -- plus the padding and the label's box. A
+     * floor below that cut long cards after two and a half lines with no ellipsis.
+     */
+    @Test
+    fun `the widget's floor holds its longest card and its tap target`() {
+        val layout = xml("res/layout/card_widget.xml")
+        val views = layout.elements("TextView").associateBy { it.android("id") }
+        val label = views.getValue("@+id/widget_deck")
+        assertEquals("the tap that opens the app is a platform-minimum target", "48dp", label.android("minHeight"))
+
+        val card = views.getValue("@+id/widget_card")
+        assertEquals("uniform", card.android("autoSizeTextType"))
+        val minSp = card.android("autoSizeMinTextSize").removeSuffix("sp").toDouble()
+        assertTrue("the card never autosizes below the 12sp floor", minSp >= 12.0)
+
+        val longestLines = 7
+        val lineDp = 1.2 * minSp + card.android("lineSpacingExtra").removeSuffix("dp").toDouble()
+        val padding = 2 * layout.documentElement.android("padding").removeSuffix("dp").toDouble()
+        val needed = longestLines * lineDp + padding + 48
+        val floor = xml("res/xml/card_widget_info.xml").documentElement.android("minHeight").removeSuffix("dp").toDouble()
+        assertTrue("minHeight ${floor}dp is below the ${"%.0f".format(needed)}dp the longest card needs", floor >= needed)
+    }
+
     @Test
     fun `the one layout is the widget's`() {
         val layouts = File(main, "res/layout").listFiles { f -> f.extension == "xml" }.orEmpty().map { it.name }
