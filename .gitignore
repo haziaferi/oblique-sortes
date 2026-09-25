@@ -1,3 +1,15 @@
 /target
 .config/
 .idea/
+
+# Gradle and Android build output. The JNI shim's .so is generated into
+# android/app/build by the buildJniShim task, so none of it is checked in.
+/android/.gradle
+/android/build
+/android/app/build
+
+# Machine-specific SDK location.
+/android/local.properties
+
+# Python bytecode from running the checks in tools/.
+__pycache__/

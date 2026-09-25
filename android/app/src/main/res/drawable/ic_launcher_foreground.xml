@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Two cards, the top one drawn slightly proud of the one beneath: a deck with
+    one card coming off it, which is what the app does.
+
+    An adaptive icon is masked to whatever shape the launcher uses, and only the
+    central 66dp of the 108dp canvas is guaranteed to survive. Every path here
+    stays inside roughly x 26..82, y 22..86.
+-->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+
+    <!-- The card beneath, offset down and left. -->
+    <path
+        android:fillColor="#79747E"
+        android:pathData="M32,30 L60,30 A4,4 0 0 1 64,34 L64,82 A4,4 0 0 1 60,86 L32,86 A4,4 0 0 1 28,82 L28,34 A4,4 0 0 1 32,30 Z" />
+
+    <!-- The card on top. -->
+    <path
+        android:fillColor="#FFFBFE"
+        android:pathData="M46,22 L74,22 A4,4 0 0 1 78,26 L78,74 A4,4 0 0 1 74,78 L46,78 A4,4 0 0 1 42,74 L42,26 A4,4 0 0 1 46,22 Z" />
+
+    <!-- Three lines of text on the top card, as a card seen at a distance. -->
+    <path
+        android:fillColor="#1C1B1F"
+        android:pathData="M49,34 L71,34 L71,37 L49,37 Z M49,43 L71,43 L71,46 L49,46 Z M49,52 L63,52 L63,55 L49,55 Z" />
+</vector>

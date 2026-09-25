@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- The icon background. Ink rather than black, so the card reads as paper
+         laid on a surface and not as a hole in the launcher. -->
+    <color name="ic_launcher_background">#1C1B1F</color>
+
+    <!-- The widget's own surface, and the text on it. Fixed rather than themed:
+         a home screen is whatever wallpaper is behind it, and a widget that
+         follows the system theme can land dark text on a dark photograph. -->
+    <color name="widget_background">#1C1B1F</color>
+    <color name="widget_text">#E6E1E5</color>
+    <color name="widget_hint">#938F99</color>
+</resources>

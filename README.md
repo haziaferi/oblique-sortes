@@ -1,6 +1,6 @@
 # oblique-sortes
 
-Eight decks of cards for when the work will not move. Brian Eno and Peter Schmidt's [Oblique Strategies](https://en.wikipedia.org/wiki/Oblique_Strategies) is one of them; the other seven are for the end of a day, for writing under constraint, for finitude, for attention, for assembling a story, and for a problem that has stopped.
+Eight decks of cards for when the work will not move. Brian Eno and Peter Schmidt's [Oblique Strategies](https://en.wikipedia.org/wiki/Oblique_Strategies) is one of them; the other seven are for the end of a day, for writing under constraint, for freedom and self-deception, for attention, for finitude, for assembling a story, and for a problem that has stopped.
 
 Named for the *sortes Vergilianae*, the practice of opening Virgil at random and taking what you land on as counsel. That is the whole mechanism here.
 
@@ -54,6 +54,12 @@ What worked so well today that you failed to notice it?
 Cut the part you had to explain.
 Write the whole thing as one sentence.
 
+>  sortes --any
+A weed doing well.
+
+>  sortes stuck --seed 1979
+Whose problem is this actually?
+
 >  sortes --list
 * oblique       156  Oblique Strategies
   examen         92  Examen
@@ -64,10 +70,27 @@ Dramatis (dramatis)
 Situations, casts and beats to assemble a story from.
 104 cards
 Text from the public domain: Georges Polti (Ray trans. 1916), ...
+
+>  sortes attention --all
+A weed doing well.
+Attend to the pause, not the note.
+...
+
+>  sortes oblique --find repetition
+Emphasize repetitions
+Repetition is a form of change
 ```
 
 `sortes --help` prints the rest. With no deck named it draws from the first deck compiled in,
 which is `oblique` whenever that feature is on — so the bare command behaves as it always has.
+`--any` picks the deck for you; `--seed N` makes a draw reproducible, for as long as the decks
+hold the same cards. `--find TEXT` selects rather than draws: it prints every card that matches,
+ignoring case, and prints nothing and still succeeds when none does — an empty result is an
+answer, and an unknown deck is the thing that actually fails.
+
+Shell completions for bash, zsh and fish live in [`completions/`](./completions). They read the
+deck names from `sortes --list` rather than keeping a copy, so a single-deck build completes a
+single deck.
 
 ## Decks
 
@@ -97,6 +120,74 @@ for deck in sortes::decks() {
     println!("{} ({} cards)", deck.name, deck.count());
 }
 ```
+
+`random()` asks the thread-local generator each time, so a run of draws may repeat a card and
+cannot be replayed. A `Shoe` keeps a shuffled order and a cursor into it instead: every card
+comes up once before any comes up twice, the card ending one pass never opens the next, and a
+shoe built from a seed deals the same sequence every time.
+
+```rust
+let deck = sortes::deck_by_id("oblique").expect("compiled in");
+
+let mut shoe = deck.shoe();
+for _ in 0..deck.count() {
+    println!("{}", shoe.draw()); // the whole deck, no card twice
+}
+
+// Reproducible: the same seed, the same cards, in the same order.
+assert_eq!(deck.shoe_with_seed(1979).draw_n(5), deck.shoe_with_seed(1979).draw_n(5));
+```
+
+The generator lives inside the shoe, not in `Deck` — decks stay compile-time constants, and no
+dependency of this crate reaches its public API. A seed holds only while the decks hold the same
+cards; one added or reworded in a later release reshuffles every seed with it.
+
+Every card has a stable id, derived from its deck and its own text rather than its position, so
+something that saves a card can find it again. Rewording a card changes its id, which is the
+honest answer: whatever saved the old wording should notice rather than quietly show the new one.
+
+```rust
+use sortes::CardId;
+
+let deck = sortes::deck_by_id("oblique").expect("compiled in");
+let card = deck.cards()[0];
+let id = deck.id_of(card).expect("the card is in the deck");
+
+// Written down, read back, and found again — in any build that has the deck.
+let written = id.to_string();
+let id = written.parse::<CardId>().expect("we just wrote it");
+assert_eq!(sortes::card_by_id(id), Some((*deck, card)));
+```
+
+`Deck::find` searches a deck. Card text is ASCII throughout, so the match is case-blind and
+allocates nothing:
+
+```rust
+let deck = sortes::deck_by_id("oblique").expect("compiled in");
+for card in deck.find("repetition") {
+    println!("{card}");
+}
+```
+
+## Android
+
+The same decks as an app: `minSdk 30`, `targetSdk 36`, arm64-v8a.
+
+```bash
+just apk        # gradle drives cargo; this is the whole build
+just install    # and put it on a connected device
+```
+
+`android/jni` is a workspace member holding the JNI shim, so the library itself
+stays platform-free and `unsafe`-free; `android/app` is one Activity with no
+AndroidX and one XML layout, which is the widget's and belongs to it. Pick a
+deck, draw one card or several, search it — or search for nothing and read the
+deck whole, as `--find ""` does — keep the ones worth keeping, share one or
+long-press to copy it. Draws come from a shoe, so working through a deck
+does not hand back cards already seen, and a drawn card survives a rotation
+because it cannot be drawn again. There is a home-screen widget that shows one
+card, redraws it when the card is tapped, and opens the app when the deck name
+under it is. See [android/README.md](./android/README.md).
 
 ## Credit
 

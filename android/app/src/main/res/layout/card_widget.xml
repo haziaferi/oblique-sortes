@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    The widget, and the app's only XML layout.
+
+    A RemoteViews tree cannot be built in code the way the Activity's is: the
+    launcher inflates it in its own process, so it has to be a layout resource
+    and it may only use the view types RemoteViews supports. That is the whole
+    reason this file exists, and why the rest of the app still has none.
+-->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@drawable/widget_surface"
+    android:padding="14dp">
+
+    <TextView
+        android:id="@+id/widget_card"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:textColor="@color/widget_text"
+        android:typeface="monospace"
+        android:lineSpacingExtra="3dp"
+        android:gravity="center_vertical"
+        android:maxLines="8"
+        android:ellipsize="end"
+        android:autoSizeTextType="uniform"
+        android:autoSizeMinTextSize="12sp"
+        android:autoSizeMaxTextSize="15sp"
+        android:autoSizeStepGranularity="1sp"
+        android:text="@string/widget_loading" />
+
+    <!-- The tap that opens the app, so it gets a 48dp box: the text sits at
+         the foot of it and the rest is touch room over the card's own
+         padding. Its size and the widget's floor in card_widget_info.xml are
+         one fact, and ManifestAgreementTest holds them together. -->
+    <TextView
+        android:id="@+id/widget_deck"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:minHeight="48dp"
+        android:gravity="bottom"
+        android:textColor="@color/widget_hint"
+        android:textSize="12sp"
+        android:maxLines="1"
+        android:ellipsize="end" />
+
+</LinearLayout>

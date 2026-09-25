@@ -4,11 +4,18 @@ on:
         branches: ["latest"]
         paths:
             - src/**
+            - tests/**
+            - android/**
             - examples/**
             - Cargo.toml
             - Cargo.lock
             - .rustfmt.toml
             - .github/workflows/test.yml
+            # The prose job reads these, and the docs it checks.
+            - tools/**
+            - README.md
+            - SPEC.md
+            - completions/**
     pull_request:
         branches: ["latest"]
     workflow_dispatch:
@@ -19,11 +26,27 @@ env:
     CARGO_TERM_COLOR: always
 
 jobs:
+    # Pure text over the tree, so it needs no toolchain and fails in seconds,
+    # before any Rust or Gradle job has warmed up. Every file, symbol and
+    # number the docs state must be borne out by the sources.
+    prose:
+        name: prose matches tree
+        runs-on: ubuntu-latest
+        steps:
+            - name: checkout
+              uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+              with:
+                persist-credentials: false
+
+            - name: the docs describe the code that exists
+              run: python3 tools/spec_check.py
+
     test:
         name: test
         runs-on: ubuntu-latest
-        # sccache is scoped to this job: it is the only one that compiles, and
-        # it is the only one that installs the wrapper.
+        # Scoped to this job, which is the only one that installs the wrapper.
+        # The feature-matrix job compiles as well and would benefit; wiring it
+        # up there is a separate change.
         env:
             SCCACHE_GHA_ENABLED: "true"
             RUSTC_WRAPPER: "sccache"
@@ -114,6 +137,22 @@ jobs:
 
             # The crate promises this failure by name; see the `compile_error!`
             # at the crate root.
+            # The JNI shim is a workspace member and is not covered by the
+            # jobs above, which build the library alone. `cargo check` does not
+            # link, so this needs the Rust target and no NDK -- cheap, and it
+            # stops the shim rotting when the library's API moves.
+            - name: the Android JNI shim still compiles
+              run: |
+                  rustup target add aarch64-linux-android
+                  cargo check --locked -p sortes-jni --target aarch64-linux-android
+
+            # The shim's record format is what the Kotlin side splits on, and
+            # its tests are plain Rust over the library: they need the host, not
+            # a device. `default-members` keeps them out of the test job above,
+            # so they are asked for by name here.
+            - name: the shim's record format still round-trips
+              run: cargo test --locked -p sortes-jni
+
             - name: a build with no deck fails, and says why
               shell: bash
               run: |
@@ -123,6 +162,66 @@ jobs:
                   fi
                   cat build.log
                   grep -q "at least one deck feature must be enabled" build.log
+
+    android:
+        name: android app
+        runs-on: ubuntu-latest
+        steps:
+            - name: checkout
+              uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+              with:
+                persist-credentials: false
+
+            - name: Install Rust toolchain
+              uses: actions-rust-lang/setup-rust-toolchain@166cdcfd11aee3cb47222f9ddb555ce30ddb9659 # v1.17.0
+              with:
+                  target: aarch64-linux-android
+
+            # No third-party action for the SDK or the JDK: the ubuntu runner
+            # ships both, and every action in this repo carries a verified SHA,
+            # which is a cost worth paying only for something the image lacks.
+            # `local.properties` is not committed, so the build falls back to
+            # ANDROID_HOME, which the image sets.
+            - name: assemble the debug APK
+              shell: bash
+              run: |
+                  set -euo pipefail
+                  export ANDROID_NDK_HOME="${ANDROID_NDK_LATEST_HOME:?the runner image should provide an NDK}"
+                  ./android/gradlew -p android assembleDebug --no-daemon --console=plain
+
+            # The debug build does not shrink, so it cannot show a missing keep
+            # rule. R8 renames the `Native` methods that JNI matches by name,
+            # and that failure is silent at build time and fatal on the device,
+            # so the release build is the one that proves proguard-rules.pro.
+            # Unsigned here; no keystore reaches CI.
+            # Neither needs a device: the decoding and the shoe are plain
+            # Kotlin, which is why Native.kt splits each native call from the
+            # parsing around it and CardShoe takes its shuffle as a function.
+            - name: the app's unit tests, and lint
+              shell: bash
+              run: |
+                  set -euo pipefail
+                  export ANDROID_NDK_HOME="${ANDROID_NDK_LATEST_HOME:?the runner image should provide an NDK}"
+                  ./android/gradlew -p android testDebugUnitTest lintDebug --no-daemon --console=plain
+
+            - name: assemble the release APK, which is what runs R8
+              shell: bash
+              run: |
+                  set -euo pipefail
+                  export ANDROID_NDK_HOME="${ANDROID_NDK_LATEST_HOME:?the runner image should provide an NDK}"
+                  ./android/gradlew -p android assembleRelease --no-daemon --console=plain
+
+            # The JNI methods surviving R8 is the property that matters, and
+            # it currently holds because of a default AGP supplies rather than
+            # anything in this repo -- so check the outcome, not the rule. This
+            # catches AGP dropping that default, a switch to a different default
+            # file, or a keep rule that stops matching, all of which are silent
+            # at build time and fatal on the device. The check is a script so
+            # `just r8-check` runs the same thing locally; it reads the method
+            # list out of Native.kt, because a copy written here once shipped
+            # three entry points unchecked.
+            - name: the JNI methods survived R8
+              run: python3 tools/r8_check.py
 
     fmt:
         name: formatting check

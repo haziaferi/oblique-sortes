@@ -1,0 +1,32 @@
+#compdef sortes
+#
+# zsh completion for sortes.
+#
+# Deck ids come from `sortes --list` rather than a list kept here, so a binary
+# built with one deck completes one deck. Put this file on your $fpath.
+#
+# A deck line is one whose card count is a number: that separates a deck from
+# the footer, and survives the marker on the default deck shifting the columns.
+_sortes_decks() {
+    _call_program decks "$1" --list 2> /dev/null |
+        awk '{ if ($1 == "*") { id = $2; n = $3 } else { id = $1; n = $2 } ; if (n ~ /^[0-9]+$/) print id }'
+}
+
+_sortes() {
+    local -a decks
+    decks=(${(f)"$(_sortes_decks ${words[1]})"})
+
+    _arguments -s \
+        '(-n --count)'{-n,--count}'[draw N cards, without replacement]:count:' \
+        '--seed[draw reproducibly from this seed]:seed:' \
+        '--any[draw from a deck picked at random]' \
+        '(-a --all)'{-a,--all}'[print every card in the deck, in order]' \
+        '(-f --find)'{-f,--find}'[print every card containing TEXT]:text:' \
+        '(-l --list)'{-l,--list}'[list the decks built into this binary]' \
+        '--about[describe a deck and say where its text came from]' \
+        '(-h --help)'{-h,--help}'[print the grammar]' \
+        '(-V --version)'{-V,--version}'[print the version]' \
+        "1:deck:(${decks})"
+}
+
+_sortes "$@"

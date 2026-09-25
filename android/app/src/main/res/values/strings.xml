@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">sortes</string>
+
+    <!-- A Spinner announces its selection but not what the selection is of. -->
+    <string name="deck_label">Deck</string>
+
+    <string name="draw">Draw</string>
+    <string name="draw_n">Draw %1$d</string>
+    <string name="share">Share</string>
+    <string name="share_chooser">Share this card</string>
+    <string name="share_unavailable">Nothing on this device accepts shared text.</string>
+    <string name="copied">Card copied</string>
+
+    <string name="keep">Keep</string>
+    <string name="kept">Kept</string>
+    <string name="kept_toast">Card kept</string>
+    <string name="unkept_toast">Card let go</string>
+    <!-- The list of kept cards. "Saved", not "Kept cards": beside the Keep/Kept toggle
+         the row read Kept cards · Kept, two adjacent buttons saying one word. -->
+    <string name="saved">Saved</string>
+    <string name="saved_empty">No cards kept yet. Keep holds the card on screen for later.</string>
+    <!-- One kept card in the list, with the deck it came from under it. Kept
+         cards are held in one list across every deck, and the card itself does
+         not say which. -->
+    <string name="saved_entry">%1$s\n(%2$s)</string>
+    <string name="card_gone">This card is no longer in the deck.</string>
+
+    <string name="find">Find</string>
+    <string name="find_in">Find in %1$s</string>
+    <!-- Leaving the box empty matches every card, as an empty needle does on the
+         command line, and is how the whole deck is browsed. The hint is the only
+         thing that says so. -->
+    <string name="find_hint">Words on the card, or nothing for all</string>
+    <string name="no_matches">Nothing matched. Try one word.</string>
+
+    <!-- The screen shown when the decks cannot be reached. The sentence is what a
+         person can act on; the detail beneath it is for a bug report. -->
+    <string name="native_failed">sortes could not load its decks on this device. Reinstalling usually fixes it.</string>
+    <string name="native_no_decks">The native library loaded but reports no decks.</string>
+
+    <string name="widget_label">A card</string>
+    <string name="widget_description">One card on the home screen. Tap it to draw another.</string>
+    <string name="widget_loading">Tap to draw a card.</string>
+    <string name="widget_unavailable">The decks did not load.</string>
+    <!-- The deck name under the card opens the app; the card itself redraws. A
+         contentDescription replaces the text for a screen reader, so the one
+         with a deck carries the deck's name too; the other is for the widget
+         that could not load a deck. -->
+    <string name="widget_open_deck">%1$s. Opens sortes.</string>
+    <string name="widget_open">Opens sortes.</string>
+
+    <plurals name="matches">
+        <item quantity="one">%1$d matching</item>
+        <item quantity="other">%1$d matching</item>
+    </plurals>
+</resources>

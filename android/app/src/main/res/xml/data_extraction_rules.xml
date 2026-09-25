@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    From Android 12 this replaces android:allowBackup, which stays on the
+    manifest for API 30. The app keeps a deck preference and a list of kept
+    cards; neither leaves the device. That was the position before the app
+    stored anything, and storing something is not a reason to change it
+    quietly.
+-->
+<data-extraction-rules>
+    <cloud-backup>
+        <exclude domain="root" />
+    </cloud-backup>
+    <device-transfer>
+        <exclude domain="root" />
+    </device-transfer>
+</data-extraction-rules>

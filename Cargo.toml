@@ -1,3 +1,13 @@
+[workspace]
+# The crate stays the root package; the Android JNI shim is a member, so one
+# `cargo` drives both, they share one lockfile and one target directory, and
+# the version below is the only one in the repo.
+members = ["android/jni"]
+# A bare `cargo build`/`cargo test` at the root touches the library only. The
+# shim needs the Android NDK, and CI has none.
+default-members = ["."]
+resolver = "3"
+
 [package]
 # Not published to crates.io; installed from git. The package is named
 # `oblique-sortes` rather than `oblique` because upstream holds that name, and
@@ -42,15 +52,18 @@ full = ["oblique", "examen", "constraints", "absurd", "attention", "memento", "d
 fastrand = "2.4"
 
 [lints.rust]
-unsafe_code = { level = "deny", priority = 0 }
-future_incompatible = { level = "deny", priority = 1 }
-rust_2018_idioms = { level = "warn", priority = 2 }
-trivial_casts = { level = "warn", priority = 3 }
-trivial_numeric_casts = { level = "warn", priority = 4 }
-unused_lifetimes = { level = "warn", priority = 5 }
-unused_qualifications = { level = "warn", priority = 6 }
+# The two groups take priority -1 so a specific lint below can override a
+# member of either. The rest need no priority: none of them belongs to a
+# group listed here, so nothing overlaps.
+future_incompatible = { level = "deny", priority = -1 }
+rust_2018_idioms = { level = "warn", priority = -1 }
+unsafe_code = "deny"
+trivial_casts = "warn"
+trivial_numeric_casts = "warn"
+unused_lifetimes = "warn"
+unused_qualifications = "warn"
 # Every public item is documented and carries a doctest; keep it that way.
-missing_docs = { level = "deny", priority = 7 }
+missing_docs = "deny"
 
 [lints.clippy]
 unwrap_used = "deny"
@@ -61,3 +74,16 @@ codegen-units = 1 # Single codegen unit for better optimization
 opt-level = 3     # Maximum optimization
 strip = true      # Strip symbols for smaller binary
 panic = "abort"   # Smaller binary, no unwinding
+
+# The profile the Android shim is built with, and the reason it exists.
+#
+# Cargo honours profiles only at the workspace root, so `[profile.release]`
+# above applies to every member -- including the shim, whose `catch_unwind`
+# guards do nothing at all under `panic = "abort"`: the process aborts before
+# unwinding starts. `panic` is one of the few keys Cargo will not let a
+# per-package override change, so the shim gets its own profile instead. The
+# Gradle build asks for it by name, and `sortes-jni` refuses to compile without
+# it -- see the `compile_error!` at the top of android/jni/src/lib.rs.
+[profile.android]
+inherits = "release"
+panic = "unwind"

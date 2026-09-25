@@ -1,0 +1,19 @@
+[package]
+# The JNI shim lives in its own crate so that `oblique-sortes` stays a plain
+# library: no platform bindings, no `unsafe`, and nothing Android-shaped in a
+# crate that also builds for macOS and Linux.
+name = "sortes-jni"
+version = "0.1.0"
+edition = "2024"
+description = "JNI bindings that expose the sortes decks to an Android app."
+license = "ISC"
+publish = false
+
+[lib]
+name = "sortes_jni"
+# cdylib is what `System.loadLibrary` can open.
+crate-type = ["cdylib"]
+
+[dependencies]
+jni = "0.21"
+oblique-sortes = { path = "../..", features = ["full"] }

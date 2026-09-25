@@ -128,11 +128,17 @@ jobs:
                   test -f "$bin_path" || { echo "missing binary at $bin_path" >&2; exit 1; }
 
                   tarball="$BINARY_NAME-$TARGET.tar.gz"
-                  # `tar -C <dir> <file>` archives the bare binary at the top level.
-                  # We do NOT use --strip-components on create: GNU tar (Linux)
-                  # silently ignores it on -c, leaving target/<triple>/release/
-                  # nesting in the asset and breaking `bin.install`.
-                  tar czf "$tarball" -C "target/$TARGET/release" "$BINARY_NAME"
+
+                  # Staged rather than archived in place, so the binary keeps
+                  # its place at the top level of the tarball -- `bin.install`
+                  # in the tap depends on that -- while the completions ride
+                  # along beside it. We do NOT use --strip-components on
+                  # create: GNU tar (Linux) silently ignores it on -c, leaving
+                  # target/<triple>/release/ nesting in the asset.
+                  stage=$(mktemp -d)
+                  cp "$bin_path" "$stage/$BINARY_NAME"
+                  cp -R completions "$stage/completions"
+                  tar czf "$tarball" -C "$stage" "$BINARY_NAME" completions
 
                   shasum -a 256 "$tarball" | awk '{ print $1 }' > "$tarball.sha256"
                   gh release upload "$REF_NAME" "$tarball" "$tarball.sha256" --clobber
