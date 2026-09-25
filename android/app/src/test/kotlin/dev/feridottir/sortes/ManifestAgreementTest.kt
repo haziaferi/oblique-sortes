@@ -77,30 +77,55 @@ class ManifestAgreementTest {
     }
 
     /**
-     * The deck name is the tap that opens the app, so it is a 48dp target; the
-     * card autosizes no smaller than 12sp; and the widget's floor is what the
-     * longest card needs at that size -- seven lines of 12sp mono at 180dp wide,
-     * 17.4dp each with the 3dp extra -- plus the padding and the label's box. A
-     * floor below that cut long cards after two and a half lines with no ellipsis.
+     * `WidgetBox` works in dp and sp that are really written in the widget's
+     * XML, where the views that spend them live. It is the same fact in two
+     * files: edit one and the widget goes on rendering, with the lines it
+     * allows the card no longer the lines the card has room for.
      */
     @Test
-    fun `the widget's floor holds its longest card and its tap target`() {
+    fun `the widget's box is the one the layout describes`() {
         val layout = xml("res/layout/card_widget.xml")
         val views = layout.elements("TextView").associateBy { it.android("id") }
+
         val label = views.getValue("@+id/widget_deck")
-        assertEquals("the tap that opens the app is a platform-minimum target", "48dp", label.android("minHeight"))
+        assertEquals("the tap that opens the app is a platform-minimum target",
+                     "${WidgetBox.LABEL_DP}dp", label.android("minHeight"))
 
         val card = views.getValue("@+id/widget_card")
         assertEquals("uniform", card.android("autoSizeTextType"))
-        val minSp = card.android("autoSizeMinTextSize").removeSuffix("sp").toDouble()
-        assertTrue("the card never autosizes below the 12sp floor", minSp >= 12.0)
+        assertEquals("the smallest the card is allowed to get",
+                     WidgetBox.MIN_SP, card.android("autoSizeMinTextSize").removeSuffix("sp").toDouble(), 0.0)
+        assertEquals("the leading a line of card carries",
+                     WidgetBox.LINE_EXTRA_DP, card.android("lineSpacingExtra").removeSuffix("dp").toDouble(), 0.0)
+        assertEquals("the ceiling no box may exceed",
+                     WidgetBox.MAX_LINES.toLong(), card.android("maxLines").toLong())
+        assertEquals("the padding the box spends twice",
+                     WidgetBox.PADDING_DP.toLong(), layout.documentElement.android("padding").removeSuffix("dp").toLong())
+    }
 
-        val longestLines = 7
-        val lineDp = 1.2 * minSp + card.android("lineSpacingExtra").removeSuffix("dp").toDouble()
-        val padding = 2 * layout.documentElement.android("padding").removeSuffix("dp").toDouble()
-        val needed = longestLines * lineDp + padding + 48
-        val floor = xml("res/xml/card_widget_info.xml").documentElement.android("minHeight").removeSuffix("dp").toDouble()
-        assertTrue("minHeight ${floor}dp is below the ${"%.0f".format(needed)}dp the longest card needs", floor >= needed)
+    /**
+     * The default placement shows the longest card whole, and the widget can
+     * still be made small: the two used to be one number, and declaring only
+     * `minHeight` left a widget that could not be resized below the size the
+     * longest card needs -- 246x293dp on the launcher grid, for a median card
+     * that fills under a third of it.
+     */
+    @Test
+    fun `the widget's floor holds its longest card and its resize floor holds two lines`() {
+        val provider = xml("res/xml/card_widget_info.xml").documentElement
+        val default = provider.android("minHeight").removeSuffix("dp").toInt()
+        val floor = provider.android("minResizeHeight").removeSuffix("dp").toInt()
+
+        assertEquals("the default placement holds the longest card whole",
+                     LONGEST_CARD_LINES.toLong(), WidgetBox.linesFor(default).toLong())
+        assertEquals("the resize floor is the room two lines need",
+                     WidgetBox.heightFor(WidgetBox.MIN_LINES).toLong(), floor.toLong())
+        assertTrue("a resize floor at the default size is no floor at all", floor < default)
+    }
+
+    private companion object {
+        /** The 127-character card, wrapped at 12sp in a 180dp-wide widget. */
+        const val LONGEST_CARD_LINES = 7
     }
 
     @Test

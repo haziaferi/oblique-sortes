@@ -36,9 +36,12 @@ test can choose what a pass looks like and pin down what happens at the seam
 between two of them. Nothing there loads the native library or touches a
 `Context`.
 
-That last point is the rule, not a coincidence: the JVM suite reaches `Native.kt`
-and `CardShoe.kt` and reaches neither `MainActivity` nor `CardWidget`. Logic that
-wants a test goes in the first pair.
+That last point is the rule, not a coincidence: the JVM suite reaches `Native.kt`,
+`CardShoe.kt` and `WidgetBox.kt`, and reaches neither `MainActivity` nor
+`CardWidget`. Logic that wants a test goes in the first three. `WidgetBox` is
+the newest of them and the clearest case: how much of a card the widget can show
+is arithmetic over a height, so it is arithmetic over a height, and the widget
+only asks it.
 
 `ManifestAgreementTest` reads the manifest and the widget's provider XML as plain
 files and holds them to the Kotlin: the tap action `CardWidget` sends is the one
@@ -53,10 +56,13 @@ and every number they state. `just r8-check` (`tools/r8_check.py`) reads the
 release DEX and finds every JNI method's name in it; it is what CI runs after
 `assembleRelease`, as a script so it runs here too.
 
-Lint runs with `warningsAsErrors`. Four checks are disabled by name in
-`app/build.gradle.kts`, each with its reason beside it — all four are decisions
-already taken (a pinned `targetSdk`, one ABI) rather than defects, and naming
-them one at a time is what keeps the rest of the gate worth reading.
+Lint runs with `warningsAsErrors`. Five checks are disabled by name in
+`app/build.gradle.kts`, each with its reason beside it — all five are decisions
+already taken (a pinned `targetSdk`, a pinned wrapper, one ABI) rather than
+defects, and naming them one at a time is what keeps the rest of the gate worth
+reading. Two of them are version advisories, which is the same decision twice:
+a check that goes red the day something upstream is released, rather than the
+day anything here changes, is a check that trains you to ignore the gate.
 
 Gradle drives cargo. The `buildJniShim` task compiles `sortes-jni` for
 `aarch64-linux-android` and lays the result out as `arm64-v8a/lib*.so`, and the
@@ -173,11 +179,20 @@ rather than a silent fallback in each consumer.
   opens the app, which is otherwise unreachable from the home screen, so it is
   a 48dp target and its description carries the deck's name as well as what the
   tap does.
-- **The widget's floor is set by its longest card.** `ellipsize` fires only at
-  `maxLines`, so a widget shorter than the text simply clips it, with no sign
-  it was cut. The card autosizes between 15sp and 12sp, and `minHeight` is what
-  the 127-character card needs at 12sp plus the padding and the label's box —
-  200dp. `ManifestAgreementTest` holds the three numbers together.
+- **The widget's floor is set by its longest card, and its floor is not its
+  default.** `ellipsize` fires only at `maxLines`, so a widget shorter than the
+  text simply clips it, with no sign it was cut. The card autosizes between 15sp
+  and 12sp, and `minHeight` is what the 127-character card needs at 12sp plus
+  the padding and the label's box. A provider that declares no `minResize*` is
+  then resizable no smaller than that, which made the size the longest card
+  needs the only size the widget could ever be: on the launcher grid it came out
+  three columns by two rows, for a median card that fills under a third of it.
+  So `minResizeHeight` is the room two lines need instead, and `WidgetBox` works
+  out the card's `maxLines` from the height the host reports — a card too long
+  for a small widget ends in an ellipsis rather than being cut. That arithmetic
+  divides a height in dp by a line in sp, so the reader's font scale is the
+  other half of it: turn the text up and the same box holds fewer lines.
+  `ManifestAgreementTest` holds every number in it to the XML that states it.
 - **Kept cards are stored as ids, not as text.** An id stops resolving when its
   card is reworded or its deck leaves the build, and the app says so. Text could
   not tell the difference, and would show the old wording for ever.

@@ -556,9 +556,23 @@ And in landscape the card was 10dp tall, the fixed chrome having taken the 360dp
 height the secondary lines yield. What the walk confirmed as built: "Saved" on one line at 72dp,
 every button 48dp, the empty-search browse titled by deck and in `--all` order, Keep→Kept and the
 Saved list labelling each card's deck, long-press copying (pasted back into Find), the card
-surviving a night-mode recreate and a rotation, dark mode at 15.2/8.3/13.2:1. Not yet walked: the
-widget, which no `adb` can place on a launcher — the provider is registered at 180×200dp and
-waits for a hand.
+surviving a night-mode recreate and a rotation, dark mode at 15.2/8.3/13.2:1.
+
+**The widget, walked once a hand had placed it.** No `adb` can drop a widget on a launcher, so
+this waited for one. What held: the deck name is exactly a 48dp box, the card renders in the
+hexes `colors.xml` declares rather than the theme's — 13.27:1 and 5.41:1, measured off the
+screenshot, which is the point of a palette a widget owns — a tap deals a card that is not the
+one showing, and the deck name opens the app. What did not: the launcher gave it three columns
+by two rows, and it could not be made smaller, because a provider that declares no `minResize*`
+is resizable only down to its own minimum and that minimum was sized for the longest card. Across
+all 797 cards at that width the median is three lines in a box that holds nine and a half; 85% of
+cards fill under a third of it. The floor and the default are now separate: `minResizeHeight` is
+the room two lines need, and `WidgetBox.linesFor` sets the card's `maxLines` from the height the
+host reports, so what a small widget cannot show ends in an ellipsis instead of being cut blind.
+Measuring the resized widget found the second half of it — the box is in dp and the card is in
+sp, so the count is wrong for any reader who has turned the text up. At a font scale of 1.3 a
+line is 21.7dp rather than 17.4, and the ellipsis was watched firing on a four-line box on the
+device.
 
 **The first design critique, and what it could fix without a decision.** Measured from the sources
 and a rendered reconstruction, no device. Two findings were high, both in the widget and both from

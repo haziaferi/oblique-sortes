@@ -228,6 +228,11 @@ android {
             // them is a change to test, not a warning to silence by bumping.
             "OldTargetApi",
             "GradleDependency",
+            // The same decision for the wrapper: it is pinned, and this check
+            // turns red the day an upstream release happens rather than the
+            // day anything here changes. A gate that fails on the calendar is
+            // a gate that gets ignored.
+            "AndroidGradlePluginVersion",
             // arm64-v8a only, which android/README.md states. ChromeOS is not
             // a target of a personal-use app.
             "ChromeOsAbiSupport",

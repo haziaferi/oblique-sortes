@@ -7,14 +7,24 @@
     minHeight is what the longest card needs, not what looks small. The card
     text autosizes down to 12sp, and at 12sp the 127-character card wraps to
     seven lines of 17.4dp at 180dp wide: 122dp of text, 28dp of padding, and
-    the 48dp tap box of the deck name beneath it. A shorter floor cut long
-    cards after two and a half lines with no ellipsis, since ellipsize fires
-    only at maxLines.
+    the 48dp tap box of the deck name beneath it.
+
+    minResizeHeight is a different question, and declaring only the first
+    answered it wrongly: a provider with no minResize is resizable no smaller
+    than its own minimum, so sizing the default for the longest card made that
+    the smallest the widget could ever be. On the launcher grid it came out at
+    246x293dp for a median card that fills under a third of it. The floor is
+    now the room two lines need, 111dp by the same arithmetic, and CardWidget
+    sets the card's maxLines from the height the host reports, so a card too
+    long for a small widget ends in an ellipsis rather than being cut with
+    nothing to show for it. The width keeps its floor: a monospace card much
+    narrower than 180dp wraps into noise whatever its height.
 -->
 <appwidget-provider xmlns:android="http://schemas.android.com/apk/res/android"
     android:initialLayout="@layout/card_widget"
     android:minWidth="180dp"
     android:minHeight="200dp"
+    android:minResizeHeight="111dp"
     android:resizeMode="horizontal|vertical"
     android:updatePeriodMillis="0"
     android:widgetCategory="home_screen"
