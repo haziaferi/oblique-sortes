@@ -229,9 +229,9 @@ because it is assembled under `#[cfg]`. That was wrong — `cfg` resolves at com
 `#[cfg]` on the array elements composes fine with `const fn`. `decks()` is `const fn`, which
 keeps the crate's const-everywhere character.
 
-A build with no deck feature at all raises `compile_error!` with a one-line message. The seven
-top-level functions that delegate to the Oblique deck are themselves
-`#[cfg(feature = "oblique")]` — without that gate the
+A build with no deck feature at all raises `compile_error!` with a one-line message. The
+top-level functions that delegate to the Oblique deck -- seven of them now, the six this plan
+counts plus the one it adds -- are themselves `#[cfg(feature = "oblique")]` — without that gate the
 `compile_error!` was followed by a cascade of unresolved-path errors, which is not a clean
 failure.
 
@@ -243,7 +243,9 @@ all now fixed:
    called the feature-gated top-level functions, so neither compiled without `oblique`. Both
    now draw from `decks().first()`, which is `oblique` whenever it is enabled, so the default
    build is unchanged.
-2. Nine tests exercising the top-level functions needed `#[cfg(feature = "oblique")]`.
+2. Nine tests exercising the top-level functions needed `#[cfg(feature = "oblique")]` --
+   the count of tests that had to be gated during this refactor, which is not the count of
+   tests the `oblique` feature adds to a bare build.
 3. Eight doctests hardcoded `deck_by_id("oblique").expect(...)` and panicked in an examen-only
    build. Doctests cannot be feature-gated, so they are now deck-agnostic — the only form true
    under every supported feature set.

@@ -186,8 +186,8 @@ rather than a silent fallback in each consumer.
   opens the app, which is otherwise unreachable from the home screen, so it is
   a 48dp target and its description carries the deck's name as well as what the
   tap does.
-- **The widget's floor is set by its longest card, and its floor is not its
-  default.** `ellipsize` fires only at `maxLines`, so a widget shorter than the
+- **The longest card sets the widget's default size, and its resize floor is
+  a different number.** `ellipsize` fires only at `maxLines`, so a widget shorter than the
   text simply clips it, with no sign it was cut. The card autosizes between 15sp
   and 12sp, and `minHeight` is what the 127-character card needs at 12sp plus
   the padding and the label's box. A provider that declares no `minResize*` is
