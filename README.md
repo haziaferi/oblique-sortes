@@ -184,8 +184,10 @@ AndroidX and one XML layout, which is the widget's and belongs to it. Pick a
 deck, draw one card or several, search it — or search for nothing and read the
 deck whole, as `--find ""` does — keep the ones worth keeping, share one or
 long-press to copy it. Draws come from a shoe, so working through a deck
-does not hand back cards already seen, and a drawn card survives a rotation
-because it cannot be drawn again. There is a home-screen widget that shows one
+does not hand back cards already seen, and the card on screen survives a
+rotation because the Activity saves it rather than drawing again — the shoe
+would have supplied a different card, which is the whole reason it has to be
+saved. There is a home-screen widget that shows one
 card, redraws it when the card is tapped, and opens the app when the deck name
 under it is. See [android/README.md](./android/README.md).
 

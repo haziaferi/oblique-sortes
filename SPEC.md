@@ -143,11 +143,13 @@ advice.
 
 Eight decks including the existing one. Each is standalone and drawn identically.
 
-Provenance is **per-deck, not global**. Three viable modes, and the right one differs by deck:
+Provenance is **per-deck, not global**. Four modes, and the right one differs by deck:
 **original** (written fresh, cleanly ISC), **public-domain** (verbatim from PD texts and PD
-*translations* — the translation's date governs, not the author's death date), and
+*translations* — the translation's date governs, not the author's death date),
 **technique-derived** (methods aren't copyrightable, only their expression; restate in original
-words).
+words), and **attributed** — text that is neither original nor public domain, carried with its
+authors named. Only `oblique` is attributed, and it is why the mode exists: the plan was written
+with three and the deck it was written for needed a fourth.
 
 | Deck | Register | Provenance | Sources / inspirations |
 |---|---|---|---|
@@ -169,10 +171,11 @@ labelled truthfully; the quoted cards would need per-card attribution the schema
 `examen` was therefore written **entirely originally**, with the traditions named in the module
 doc as sources of *register*, not of text. No card quotes any of them.
 
-The same fork now faces every "PD + original" row above — `attention` and `memento`. Each must
-either go fully original, or `Deck` must grow a per-card attribution field. **Going fully
-original is recommended**: it keeps the schema flat and matches the decision already taken on
-the Eno deck, that the effort belongs in original writing rather than in reproducing sources.
+The same fork faced every "PD + original" row above — `attention` and `memento`. Each had to
+either go fully original, or `Deck` had to grow a per-card attribution field. **Going fully
+original was recommended and is what shipped**: it keeps the schema flat and matches the decision
+already taken on the Eno deck, that the effort belongs in original writing rather than in
+reproducing sources. Both decks carry `Original`, and `Deck` never grew the field.
 
 **Voice rules, per deck, enforced by test where mechanisable:** target card count (aim 60–120,
 so a deck feels deep but curated), max card length, permitted grammatical moods, and one
@@ -345,6 +348,9 @@ Preserve `println!` of the raw string so the `\n\t` convention keeps rendering f
   same check CI runs, as a script so it runs locally too.
 - ✅ `android/app/src/test/kotlin/dev/feridottir/sortes/ManifestAgreementTest.kt` — the manifest,
   the widget's provider XML and the Kotlin held to the facts they each state twice.
+- ✅ `android/app/src/main/kotlin/dev/feridottir/sortes/WidgetBox.kt` — how much of a card the
+  widget's box can hold, as arithmetic over a height rather than a comment in the provider XML.
+  The third file the JVM suite reaches, and the reason a widget may now be made small.
 - ✅ `README.md` — deck table, per-deck attribution, provenance policy, install instructions.
 - ✅ `.github/workflows/release.yml` — `BINARY_NAME` follows `[[bin]]`, since that is what the
   pipeline uploads and hands to the Homebrew tap.
@@ -580,8 +586,10 @@ the previous two days' work: at its 110dp minimum a long card was cut after two 
 with no ellipsis, because `ellipsize` fires only at `maxLines`; and the deck name — since it opens
 the app — was a 21dp tap target whose `contentDescription` replaced the deck's name for TalkBack.
 The card now autosizes 15sp→12sp and the floor is what the longest card needs at 12sp with the
-label's 48dp box (200dp), held by a test whose assertion carries the arithmetic; the description
-carries both facts. The mechanical rest went in with it: the browse dialog titled by deck rather
+label's 48dp box — 200dp, which was then also the smallest the widget could be, and the walk
+below is what found that out. The arithmetic has since moved into `WidgetBox`, and
+`ManifestAgreementTest` holds its constants to the XML that states them. The description carries
+both facts. The mechanical rest went in with it: the browse dialog titled by deck rather
 than "156 matching", the failure screen as a sentence over the exception rather than the
 exception alone, a fading edge on the scroll, 12sp where there was 11, two directive empty states,
 spacing on a 4dp grid. Three findings were decisions, taken the same day: the card sits on a tonal
