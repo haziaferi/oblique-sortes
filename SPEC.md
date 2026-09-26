@@ -229,8 +229,9 @@ because it is assembled under `#[cfg]`. That was wrong — `cfg` resolves at com
 `#[cfg]` on the array elements composes fine with `const fn`. `decks()` is `const fn`, which
 keeps the crate's const-everywhere character.
 
-A build with no deck feature at all raises `compile_error!` with a one-line message. The six
-top-level Oblique functions are themselves `#[cfg(feature = "oblique")]` — without that gate the
+A build with no deck feature at all raises `compile_error!` with a one-line message. The seven
+top-level functions that delegate to the Oblique deck are themselves
+`#[cfg(feature = "oblique")]` — without that gate the
 `compile_error!` was followed by a cascade of unresolved-path errors, which is not a clean
 failure.
 
@@ -257,7 +258,7 @@ every configuration.
 | `examen`, `constraints`, `absurd` or `stuck` alone | 30 | 31 |
 | `attention` or `memento` alone — each carries one voice test | 31 | 31 |
 | `dramatis` alone — a voice test and the attribution test | 32 | 31 |
-| `--all-features` | 101 | 38 |
+| `--all-features` | 102 | 38 |
 | no deck feature | — | one clean `compile_error!` |
 
 The gaps between the rows are the feature gating, and they add up: `oblique` alone carries
@@ -552,8 +553,8 @@ in the API docs, in `--help` and in the README rather than promised away.
 
 **Three JNI entry points were shipping unverified against R8.** The CI step that reads the
 shipped DEX was written when the surface was two calls, and it named them: `for method in decks
-draw`. Adding the shoe, the card ids and the search grew the surface to five, and the loop stayed
-as it was — so `shuffled`, `cardId` and `cardById` were covered by nothing, while four places in
+draw`. Adding the shoe and the card ids grew the surface to five — the search added nothing to it,
+since `cardsMatching` runs in Kotlin over a list already in hand — and the loop stayed as it was — so `shuffled`, `cardId` and `cardById` were covered by nothing, while four places in
 prose went on saying "two". The failure that step exists to catch is invisible at build time and
 fatal on the device, so it must not depend on a list anyone has to remember to extend: it now
 reads the method names out of `Native.kt`, and grows with the surface. The keep rule in
@@ -627,8 +628,8 @@ the previous two days' work: at its 110dp minimum a long card was cut after two 
 with no ellipsis, because `ellipsize` fires only at `maxLines`; and the deck name — since it opens
 the app — was a 21dp tap target whose `contentDescription` replaced the deck's name for TalkBack.
 The card now autosizes 15sp→12sp and the floor is what the longest card needs at 12sp with the
-label's 48dp box — 200dp, which was then also the smallest the widget could be, and the walk
-below is what found that out. The arithmetic has since moved into `WidgetBox`, and
+label's 48dp box — 200dp, which was then also the smallest the widget could be, as the widget
+walk above found. The arithmetic has since moved into `WidgetBox`, and
 `ManifestAgreementTest` holds its constants to the XML that states them. The description carries
 both facts. The mechanical rest went in with it: the browse dialog titled by deck rather
 than "156 matching", the failure screen as a sentence over the exception rather than the

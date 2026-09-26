@@ -128,7 +128,8 @@ rather than a silent fallback in each consumer.
   outright.
 - **Edge-to-edge means the status bar draws over the app's own ground, and
   the system picks its icon colour for the window, not the ground.** On the
-  light theme the clock came out white on pink, 1.0:1. `lightSystemBars()` asks
+  light theme the clock came out white on pink: `#FFFFFF` on `#FEEDEE`, 1.1:1,
+  which is as close to invisible as two colours get. `lightSystemBars()` asks
   for dark icons whenever the ground's luminance says it is light, so the answer
   follows whatever theme the device supplies.
 - **A phone on its side is 360dp tall.** The fixed chrome took all but 10dp of
@@ -173,8 +174,10 @@ rather than a silent fallback in each consumer.
   at the top of `jni/src/lib.rs`.
 - **`versionCode` is derived, not typed.** It comes from the crate version, so
   the two cannot drift: 0.2.0 becomes 200.
-- **The widget cannot hold a shoe.** Each update runs in a fresh process, the
-  launcher's, so nothing survives in memory between two taps. What survives is
+- **The widget cannot hold a shoe.** An update runs in this app's own process,
+  not the launcher's — the launcher inflates the views it is handed, which is a
+  different thing — and that process is started for the broadcast and may be
+  gone before the next tap, so nothing survives in memory between two of them. What survives is
   written down: the card on the widget is kept in `SharedPreferences`. So the
   Activity keeps a `CardShoe` and deals a whole shuffled pass, while the widget
   asks for two cards and takes the one that is not the one it wrote down last
