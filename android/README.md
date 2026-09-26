@@ -131,8 +131,8 @@ rather than a silent fallback in each consumer.
   light theme the clock came out white on pink, 1.0:1. `lightSystemBars()` asks
   for dark icons whenever the ground's luminance says it is light, so the answer
   follows whatever theme the device supplies.
-- **A phone on its side is 360dp tall.** The fixed chrome took all of it and the
-  card, on a weight of 1, was squeezed to 10dp. Below 480dp of window height the
+- **A phone on its side is 360dp tall.** The fixed chrome took all but 10dp of
+  it, and the card, on a weight of 1, got what was left. Below 480dp of window height the
   subtitle, blurb and provenance are `GONE` and the card gets the room.
 - **Edge-to-edge is not optional at `targetSdk 35+`.** `MainActivity` pads
   itself by the system-bar and display-cutout insets; without that the title
@@ -210,6 +210,9 @@ rather than a silent fallback in each consumer.
   is also the app's answer to `--all` — and costs no fifth button, of which the
   row has no room for one anyway.
 - **No permissions.** The decks are compiled into the native library. The app
-  reads nothing, writes nothing and opens no sockets. Sharing a card hands text
-  to `Intent.ACTION_SEND`, which is the system's chooser and not a connection of
+  opens no sockets and reads and writes nothing outside its own sandbox: the
+  deck last read, the kept ids and the card the widget is showing go to
+  `SharedPreferences`, which is private to the app and needs no permission, and
+  nothing else is stored at all. Sharing a card hands text to
+  `Intent.ACTION_SEND`, which is the system's chooser and not a connection of
   the app's own.

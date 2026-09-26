@@ -214,8 +214,8 @@ table. Deck-scoped methods mirror the existing free functions exactly — `Deck:
 `random_str()`, `random_n(n)`, `count()`, `cards()` — reusing the current bodies verbatim. The
 shuffle-indices approach in `random_n` is fine as-is at this scale.
 
-**No breaking change:** the six existing top-level functions stay, delegating to the `oblique`
-deck. `strategies_as_slice()` and `count()` stay `const fn`.
+**No breaking change:** the six top-level functions that existed when this was written stay,
+delegating to the `oblique` deck — the surface has since grown to ten, additively. `strategies_as_slice()` and `count()` stay `const fn`.
 
 Add `decks() -> &'static [&'static Deck]` and `deck_by_id(&str) -> Option<&'static Deck>`.
 
@@ -381,10 +381,11 @@ Preserve `println!` of the raw string so the `\n\t` convention keeps rendering f
    is the evidence the step-2 design was right.
 
    **All four `Provenance` variants are now exercised**, so none is dead code: `Attributed`
-   (`oblique`), `Original` (`examen`, `absurd`, `attention`, `memento`), `Technique`
-   (`constraints`), and `PublicDomain` (`dramatis`). A test asserts `dramatis` carries a credit
-   line, since among the decks written here it is the only one whose text is not ours —
-   `oblique` is not ours either, and is `Attributed` for that reason.
+   (`oblique`), `Original` (`examen`, `absurd`, `attention`, `memento`, `stuck`), `Technique`
+   (`constraints`), and `PublicDomain` (`dramatis`). The text of `oblique` and of `dramatis` is not ours, and
+   each carries that differently: `oblique` is Eno and Schmidt's, which is what `Attributed` says,
+   and `dramatis` is out of public-domain sources, which is what `PublicDomain` says. A test
+   asserts only the second carries a credit line, because only the second's sources need one.
 
    **Each deck's voice rules were enforced by its generator at the time the deck was built.**
    The generator exited non-zero rather than write a bad file — on `absurd` it caught four
@@ -418,10 +419,10 @@ Preserve `println!` of the raw string so the `\n\t` convention keeps rendering f
      asking and instructing; `memento` only states. `memento` carries 0 question marks against
      `absurd`'s 15, and refuses any card opening with an imperative verb.
 
-   **Adding a deck touches exactly five places**, and nothing else: `src/decks/<id>.rs`, a
-   `pub mod` line in `src/decks/mod.rs`, a feature in `Cargo.toml` (plus the `full` list), and
-   in `src/lib.rs` both the `compile_error!` cfg list and an entry in `decks()`, then a
-   `deck_invariants!` line with the deck's count and max length. Five places in four files.
+   **Adding a deck touches four files and nothing else**: `src/decks/<id>.rs`, a `pub mod`
+   line in `src/decks/mod.rs`, a feature in `Cargo.toml` with the `full` list beside it, and
+   `src/lib.rs` three times over — the `compile_error!` cfg list, an entry in `decks()`, and a
+   `deck_invariants!` line with the deck's count and max length.
    How the card text gets written is your business; the seven written here came from one-off
    generators that this repo does not carry, and `oblique` came from the curation pass in
    Part 1 rather than from a generator at all.
@@ -594,8 +595,9 @@ text appearance: `#837274` on the `#FEEDEE` ground for the title (4.0:1), the sa
 card's own surface — the theme's ink at six percent over that ground, `#F1E0E1` — for the card
 (3.6:1), and 2.5:1 for the three dimmed lines, which sit on the ground rather than the card and
 carry the app's 0.72 alpha over it. All three against an assumed 16.7:1. `text()` now sets `textColorPrimary`; measured
-after: 15.2, 13.5 and 6.3:1. The status bar drew white on the light ground (1.0:1), because
-edge-to-edge leaves the icon colour to the window; it follows the ground's luminance now (15.8:1).
+after: 15.2, 13.5 and 6.3:1. The status bar drew white on the light ground — `#FFFFFF` on `#FEEDEE`, 1.1:1, which is as
+close to invisible as two colours get — because edge-to-edge leaves the icon colour to the
+window; it follows the ground's luminance now (15.8:1).
 And in landscape the card was 10dp tall, the fixed chrome having taken the 360dp; below 480dp of
 height the secondary lines yield. What the walk confirmed as built: "Saved" on one line at 72dp,
 every button 48dp, the empty-search browse titled by deck and in `--all` order, Keep→Kept and the
