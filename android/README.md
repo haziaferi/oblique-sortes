@@ -36,9 +36,11 @@ test can choose what a pass looks like and pin down what happens at the seam
 between two of them. Nothing there loads the native library or touches a
 `Context`.
 
-That last point is the rule, not a coincidence: the JVM suite reaches `Native.kt`,
-`CardShoe.kt` and `WidgetBox.kt`, and reaches neither `MainActivity` nor
-`CardWidget`. Logic that wants a test goes in the first three. `WidgetBox` is
+That last point is the rule, not a coincidence: the JVM suite tests `Native.kt`,
+`CardShoe.kt` and `WidgetBox.kt`, and runs no line of `MainActivity` or
+`CardWidget` — it touches the second only to read one constant off its
+companion, `CardWidget.ACTION_DRAW`, which is the point of the test that reads
+it. Logic that wants a test goes in the first three. `WidgetBox` is
 the newest of them and the clearest case: how much of a card the widget can show
 is arithmetic over a height, so it is arithmetic over a height, and the widget
 only asks it.
@@ -172,9 +174,11 @@ rather than a silent fallback in each consumer.
 - **`versionCode` is derived, not typed.** It comes from the crate version, so
   the two cannot drift: 0.2.0 becomes 200.
 - **The widget cannot hold a shoe.** Each update runs in a fresh process, the
-  launcher's. So the Activity keeps a `CardShoe` and deals a whole shuffled
-  pass, while the widget asks for two cards and takes the one it is not already
-  showing — which covers the repeat anyone would notice, the same card twice
+  launcher's, so nothing survives in memory between two taps. What survives is
+  written down: the card on the widget is kept in `SharedPreferences`. So the
+  Activity keeps a `CardShoe` and deals a whole shuffled pass, while the widget
+  asks for two cards and takes the one that is not the one it wrote down last
+  time — which covers the repeat anyone would notice, the same card twice
   from one tap to the next. The card redraws on a tap; the deck name beneath it
   opens the app, which is otherwise unreachable from the home screen, so it is
   a 48dp target and its description carries the deck's name as well as what the
@@ -192,7 +196,10 @@ rather than a silent fallback in each consumer.
   for a small widget ends in an ellipsis rather than being cut. That arithmetic
   divides a height in dp by a line in sp, so the reader's font scale is the
   other half of it: turn the text up and the same box holds fewer lines.
-  `ManifestAgreementTest` holds every number in it to the XML that states it.
+  `ManifestAgreementTest` holds `WidgetBox`'s constants to the XML that states
+  them — the padding, the label's box, the minimum size, the leading, the line
+  cap. The font scale is in no XML and is not one of them; `WidgetBoxTest`
+  covers it, by asking what the same box holds at 1.0, 1.3 and 1.8.
 - **Kept cards are stored as ids, not as text.** An id stops resolving when its
   card is reworded or its deck leaves the build, and the app says so. Text could
   not tell the difference, and would show the old wording for ever.

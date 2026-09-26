@@ -133,7 +133,8 @@ Paraphrasing the Eno deck card-for-card to sidestep copyright is **not recommend
   A paraphrase that tracks the deck one-for-one reproduces precisely that selection — it reads
   as a derivative work of the compilation, not as independent creation.
 - The status quo — ship the text with clear attribution to Eno and Schmidt, as the README does —
-  is what essentially every open implementation does.
+  is what the implementations looked at while deciding this all did, this crate's own upstream
+  included. No survey was run; it is an impression from a handful, not a count.
 
 **Decision:** keep the deck attributed rather than paraphrased; spend the effort on original
 decks that share the deck's *function* rather than its sequence. Judgement call, not legal
@@ -159,7 +160,7 @@ with three and the deck it was written for needed a fourth.
 | `examen` ✅ | Second-person past-tense interrogative, non-judgemental | **Original** (see below) | Register drawn from — not quoting — the Ignatian examen; the Stoic evening review in Seneca's *De Ira* III.36; Marcus Aurelius on other people's faults; Epictetus on what is ours to move; the Proust Questionnaire's habit of asking a preference to learn a character. **92 cards, max 100 chars.** |
 | `absurd` ✅ | Confrontational, second person throughout; finitude, freedom, self-deception | **Original** | Register from Kierkegaard (anxiety, the crowd, deciding without certainty), Nietzsche (would you take this life again), Heraclitus (nothing holds still), Ecclesiastes (being forgotten), Montaigne (how little you know). **Camus and Sartre: themes only, no formulations** — held at authoring time by a blocklist in the generator, which is not in this repo. **86 cards, max 120 chars.** |
 | `constraints` ✅ | Imperative procedure | **Technique-derived** | Oulipo (lipogram, univocalism, snowball, definitional literature, nth-noun substitution); Dada and Surrealist practice (words drawn from a bag, cut-up and fold-in, the folded sheet passed on, unsteered writing); Burroughs–Gysin cut-up. Every card restates a method in its own words; **none quotes a source**. **100 cards, max 120 chars.** |
-| `dramatis` ✅ | Generative; **labels, not sentences** | **PublicDomain** — the only sourced deck | Polti's thirty-six situations and their casts (**Ray trans. 1916**); Propp's functions (**1928 original; renderings our own, not from the in-copyright 1958 translation**); Aristotle on reversal and recognition (**Butcher 1895**). One edit: spellings normalized to the crate's US convention. **104 cards, max 90 chars.** |
+| `dramatis` ✅ | Generative; **labels, not sentences** | **PublicDomain** — the only deck written here whose text is sourced | Polti's thirty-six situations and their casts (**Ray trans. 1916**); Propp's functions (**1928 original; renderings our own, not from the in-copyright 1958 translation**); Aristotle on reversal and recognition (**Butcher 1895**). One edit: spellings normalized to the crate's US convention. **104 cards, max 90 chars.** |
 | `attention` ✅ | Imperative-to-notice; closest to Eno's "Water", "Ghost echoes" | **Original** (the "PD + original" fork, resolved as recommended) | Register from Thoreau watching a pond through a year; haiku; Zhuangzi and the *Tao Te Ching* on the usefulness of what is not there; Sei Shōnagon's lists of things worth noticing. No card quotes any of them. **93 cards, max 60 chars — the tightest ceiling in the crate, and the point of the deck.** |
 | `memento` ✅ | Finitude, plain and unconsoling; **declarative only** | **Original** | Register from Marcus Aurelius (only the present can be lost), Seneca (length is not the measure), Montaigne (the practice of thinking about dying), and the *ars moriendi* tradition. No card quotes any of them. **Rilke is untouched** — his letters remain in copyright, and the generator's blocklist guarded the famous mortality formulations besides. **76 cards, max 110 chars.** |
 | `stuck` ✅ | Eno's territory, worked in the opposite direction: **methodical, not lateral** | **Original** | Descartes on accepting nothing unexamined, dividing a difficulty, enumerating completely (1637); Pólya on restating the problem, solving a simpler one first, working backwards, finding a solved problem that resembles this one. Methods are restatable, their wording is not — a blocklist in the generator guarded Pólya, de Bono and IDEO phrasings. **90 cards, max 80 chars.** |
@@ -179,9 +180,10 @@ original was recommended and is what shipped**: it keeps the schema flat and mat
 already taken on the Eno deck, that the effort belongs in original writing rather than in
 reproducing sources. Both decks carry `Original`, and `Deck` never grew the field.
 
-**Voice rules, per deck, enforced by test where mechanisable:** target card count (aim 60–120,
-so a deck feels deep but curated), max card length, permitted grammatical moods, and one
-orthography convention. The Eno deck's three registers — bare imperative ("Be dirty"),
+**Voice rules, per deck, enforced by test where mechanisable:** target card count for a deck
+written here (aim 60–120, so a deck feels deep but curated — `oblique` is inherited at 156 and
+is not held to it), max card length, permitted grammatical moods, and one orthography
+convention. The Eno deck's three registers — bare imperative ("Be dirty"),
 interrogative ("Is it finished?"), bare noun-phrase ("Accretion") — are the model to hold each
 new deck against.
 
@@ -260,7 +262,8 @@ every configuration.
 
 The gaps between the rows are the feature gating, and they add up: `oblique` alone carries
 eleven more lib tests than a bare deck (ten top-level ones plus the pinned derivation) and seven
-more doctests (one per top-level function). `tests/cli.rs` runs the binary itself and is counted
+more doctests — not one per top-level function, of which there are ten; the seven are the
+doctests that name a card or a count and so only run with `oblique` compiled in. `tests/cli.rs` runs the binary itself and is counted
 in neither column.
 
 Run every row when adding a deck — a deck-only build is the configuration that catches
@@ -274,10 +277,14 @@ hold the matrix.
 field now, enforce **alphabetical sort order per deck** with a test; that makes indices
 predictable and diffs reviewable. Revisit only if favourites, history, or sharing land later.
 
-**Caveat found during curation:** the deck is sorted by *displayed* text, not by literal. A
-naive `is_sorted()` test fails on `"Think\n\t-inside the work…"`, which sorts by its escape
-sequence and lands after `"Think of the radio"`. This predates the curation cut. The sort test
-must compare on the first line of each card, not the raw literal.
+**Caveat recorded during curation, and wrong:** it said a naive `is_sorted()` fails on
+`"Think\n\t-inside the work…"`, which "sorts by its escape sequence and lands after
+`"Think of the radio"`". It lands *before* it, and always would have: a continuation opens with
+`\n`, 0x0A, which is below every character a first line can end on — below the space in "Think
+of", so the shorter first line wins. The deck is in plain string order today and a naive
+`is_sorted()` passes on it. The sort test compares first lines anyway, which is the property
+actually wanted and which the raw order happens to match; §Android records the same arithmetic
+from the other side, where it is what lets Kotlin's `sorted()` reproduce a deck's own order.
 
 ### Tests
 
@@ -376,7 +383,8 @@ Preserve `println!` of the raw string so the `\n\t` convention keeps rendering f
    **All four `Provenance` variants are now exercised**, so none is dead code: `Attributed`
    (`oblique`), `Original` (`examen`, `absurd`, `attention`, `memento`), `Technique`
    (`constraints`), and `PublicDomain` (`dramatis`). A test asserts `dramatis` carries a credit
-   line, since it is the only deck whose text is not ours.
+   line, since among the decks written here it is the only one whose text is not ours —
+   `oblique` is not ours either, and is `Attributed` for that reason.
 
    **Each deck's voice rules were enforced by its generator at the time the deck was built.**
    The generator exited non-zero rather than write a bad file — on `absurd` it caught four
@@ -411,10 +419,12 @@ Preserve `println!` of the raw string so the `\n\t` convention keeps rendering f
      `absurd`'s 15, and refuses any card opening with an imperative verb.
 
    **Adding a deck touches exactly five places**, and nothing else: `src/decks/<id>.rs`, a
-   `pub mod` line in `src/decks/mod.rs`, a feature in `Cargo.toml` (plus the `full` list and
-   the `compile_error!` cfg), an entry in `decks()`, and a `deck_invariants!` line with the
-   deck's count and max length. How the card text gets written is your business; the eight
-   here came from one-off generators that this repo does not carry.
+   `pub mod` line in `src/decks/mod.rs`, a feature in `Cargo.toml` (plus the `full` list), and
+   in `src/lib.rs` both the `compile_error!` cfg list and an entry in `decks()`, then a
+   `deck_invariants!` line with the deck's count and max length. Five places in four files.
+   How the card text gets written is your business; the seven written here came from one-off
+   generators that this repo does not carry, and `oblique` came from the curation pass in
+   Part 1 rather than from a generator at all.
 5. ~~**CLI and README** last, once the deck set is stable.~~ **Done.** The grammar is a pure
    `parse()` function over the arguments with 26 unit tests, so the CLI is testable without
    spawning a process. `--help` and `--version` were added beyond the sketch below; a CLI that
@@ -582,8 +592,8 @@ reconstruction could show, all measured from screenshots rather than judged. Eve
 Activity built in code was `textColorSecondary`, because a bare `TextView` takes the default
 text appearance: `#837274` on the `#FEEDEE` ground for the title (4.0:1), the same grey on the
 card's own surface — the theme's ink at six percent over that ground, `#F1E0E1` — for the card
-(3.6:1), and 2.5:1 for the three dimmed lines, which carry the app's 0.72 alpha on top. All
-three against an assumed 16.7:1. `text()` now sets `textColorPrimary`; measured
+(3.6:1), and 2.5:1 for the three dimmed lines, which sit on the ground rather than the card and
+carry the app's 0.72 alpha over it. All three against an assumed 16.7:1. `text()` now sets `textColorPrimary`; measured
 after: 15.2, 13.5 and 6.3:1. The status bar drew white on the light ground (1.0:1), because
 edge-to-edge leaves the icon colour to the window; it follows the ground's luminance now (15.8:1).
 And in landscape the card was 10dp tall, the fixed chrome having taken the 360dp; below 480dp of
