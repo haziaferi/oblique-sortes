@@ -1,8 +1,8 @@
 # SPEC: oblique-sortes
 
 Status: **Complete. Parts 1–3 applied, all eight decks built (797 cards), and the CLI
-shipped.** What remains is listed under *Still open* at the end, and is deferred by choice
-rather than unfinished.
+shipped.** What remains is listed under *Still open* at the end: what is deferred by choice,
+what is genuinely open and waiting, and what no device walk has reached yet.
 
 **A note on names.** This document was written against the crate as received, which was called
 `oblique`. It now ships as the package **`oblique-sortes`**, with the library and binary both
@@ -468,14 +468,38 @@ either ask or instruct.
 
 ## Still open
 
-Nothing here is unfinished work; each is a decision taken deliberately.
+Two kinds of thing, and they are not the same kind: decisions taken deliberately, which need
+nothing from anyone, and open actions, which are waiting on something.
 
-1. **Two questions about the Eno deck.** Restore "Give the name away" if it can be confirmed in
-   a physical edition. Decide whether to drop the editorial `(?)` from "Idiot glee (?)".
-2. **A per-card note field**, which the two Eno cards carrying inline glosses want.
-3. **i18n**, which the compile-time `const` blocks outright. Translating would mean giving up
+**Deferred by choice.**
+
+1. **A per-card note field**, which the two Eno cards carrying inline glosses want.
+2. **i18n**, which the compile-time `const` blocks outright. Translating would mean giving up
    `const fn` on `strategies_as_slice()` and `count()` — the one change in this project that
    would actually break the public API.
+
+**Open, and waiting.**
+
+3. **Restore "Give the name away"** if it can be confirmed in a physical edition. Waiting on a
+   copy of the deck, which no amount of work here supplies.
+4. **Decide whether to drop the editorial `(?)`** from "Idiot glee (?)". Waiting on a judgement
+   that has not been made. Dropping it changes a card's text, and so its [`CardId`], which is
+   what a kept card is stored as — the decision is cheap and its consequence is not.
+
+### Not yet walked
+
+The device walks closed what they reached; these were never reached, and a list beats a memory.
+
+- **TalkBack has never been run on this app.** Every accessibility claim in this document and in
+  `android/README.md` is read from the code, not heard. The widget's `contentDescription` is the
+  one to hear first: a description *replaces* a RemoteViews text rather than adding to it, which
+  is why the deck name had to be written into it, and only a screen reader says whether that
+  reads well twice over.
+- **The spinner's dropdown and the dialog list**, whose row height for 156 multi-line items the
+  critique could not verify from the sources and no walk has measured since.
+- **A fresh widget placement.** The widget on the phone was dragged to one row during the walk
+  that produced `minResizeHeight`; what a launcher gives a widget placed after that change has
+  not been seen.
 
 ### Closed since
 
