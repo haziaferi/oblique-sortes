@@ -231,8 +231,9 @@ keeps the crate's const-everywhere character.
 
 A build with no deck feature at all raises `compile_error!` with a one-line message. The
 top-level functions that delegate to the Oblique deck -- seven of the crate's ten, being the
-six this plan counts plus the one it adds; the other three name a deck or hand one back rather
-than assuming one, so no deck feature has to be present for them to compile -- are themselves `#[cfg(feature = "oblique")]` — without that gate the
+six this plan counts plus the one it adds. They are `strategies_as_slice`, `strategies`,
+`random`, `random_str`, `random_n`, `random_n_str` and `count`; the ungated three are `decks`,
+`deck_by_id` and `card_by_id`, which name a deck or hand one back rather than assuming one -- are themselves `#[cfg(feature = "oblique")]` — without that gate the
 `compile_error!` was followed by a cascade of unresolved-path errors, which is not a clean
 failure.
 
@@ -253,7 +254,7 @@ all now fixed:
 
 The feature matrix is part of verification, not a claim. Counts below are lib unit tests /
 doctests, measured on rustc 1.92; the 26 CLI tests in `src/bin/sortes.rs` are the same in
-every configuration. The lib column does not add up to its
+every configuration that builds at all. The lib column does not add up to its
 last row and is not meant to: each row is a whole build, counting the shared tests over again,
 while `--all-features` compiles every deck's invariant block and voice tests at once. The doc
 column does add up, 31 + 7 = 38, because doctests cannot be feature-gated and only `oblique`
@@ -284,6 +285,8 @@ hold the matrix.
 `(deck_id, index)` is the cheapest handle but is unstable across edits. Rather than adding an ID
 field now, enforce **alphabetical sort order per deck** with a test; that makes indices
 predictable and diffs reviewable. Revisit only if favourites, history, or sharing land later.
+✅ The test is `sorted_by_first_line`, one per deck through `deck_invariants!`. Sharing did land,
+and with it `CardId` — see *Closed since*.
 
 **Caveat recorded during curation, and wrong:** it said a naive `is_sorted()` fails on
 `"Think\n\t-inside the work…"`, which "sorts by its escape sequence and lands after
