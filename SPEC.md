@@ -230,8 +230,9 @@ because it is assembled under `#[cfg]`. That was wrong — `cfg` resolves at com
 keeps the crate's const-everywhere character.
 
 A build with no deck feature at all raises `compile_error!` with a one-line message. The
-top-level functions that delegate to the Oblique deck -- seven of them now, the six this plan
-counts plus the one it adds -- are themselves `#[cfg(feature = "oblique")]` — without that gate the
+top-level functions that delegate to the Oblique deck -- seven of the crate's ten, being the
+six this plan counts plus the one it adds; the other three take a deck as an argument and need
+no gate -- are themselves `#[cfg(feature = "oblique")]` — without that gate the
 `compile_error!` was followed by a cascade of unresolved-path errors, which is not a clean
 failure.
 
@@ -252,7 +253,9 @@ all now fixed:
 
 The feature matrix is part of verification, not a claim. Counts below are lib unit tests /
 doctests, measured on rustc 1.92; the 26 CLI tests in `src/bin/sortes.rs` are the same in
-every configuration.
+every configuration. The rows do not add up to the last one and are not meant to: each is a
+whole build, counting the shared tests over again, while `--all-features` compiles every deck's
+invariant block and voice tests at once. Every figure here is measured, not derived.
 
 | Configuration | lib | doc |
 |---|---:|---:|
