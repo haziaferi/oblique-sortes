@@ -44,9 +44,11 @@ Three structural facts constrain everything below:
 
 ## Part 1 — Curation of the original 176 (APPLIED)
 
-**Result: 176 → 156.** The only cut was collapsing variant wordings. Nothing was removed on
+**Result: 176 → 156.** The only cut was collapsing variant wordings. No card was removed on
 grounds of taste, register, or subject matter — no second-guessing Eno and Schmidt about what
-belongs in a creative deck.
+belongs in a creative deck. Register does decide *which* of a collapsed pair survives, and the
+table below gives that reason openly; what it never decides is whether a pair collapses at all,
+which is the "not a distinct prompt" test and nothing else.
 
 ### The governing principle
 
@@ -554,8 +556,10 @@ nothing else.
 **The first device walk, on the OnePlus 9 Pro (Android 14, 360×804dp).** Three defects no
 reconstruction could show, all measured from screenshots rather than judged. Every line the
 Activity built in code was `textColorSecondary`, because a bare `TextView` takes the default
-text appearance: `#837274` on `#FEEDEE` for the title (4.0:1) and the card (3.6:1), and 2.5:1 for
-the three dimmed lines, against an assumed 16.7:1. `text()` now sets `textColorPrimary`; measured
+text appearance: `#837274` on the `#FEEDEE` ground for the title (4.0:1), the same grey on the
+card's own surface — the theme's ink at six percent over that ground, `#F1E0E1` — for the card
+(3.6:1), and 2.5:1 for the three dimmed lines, which carry the app's 0.72 alpha on top. All
+three against an assumed 16.7:1. `text()` now sets `textColorPrimary`; measured
 after: 15.2, 13.5 and 6.3:1. The status bar drew white on the light ground (1.0:1), because
 edge-to-edge leaves the icon colour to the window; it follows the ground's luminance now (15.8:1).
 And in landscape the card was 10dp tall, the fixed chrome having taken the 360dp; below 480dp of
@@ -576,9 +580,10 @@ cards fill under a third of it. The floor and the default are now separate: `min
 the room two lines need, and `WidgetBox.linesFor` sets the card's `maxLines` from the height the
 host reports, so what a small widget cannot show ends in an ellipsis instead of being cut blind.
 Measuring the resized widget found the second half of it — the box is in dp and the card is in
-sp, so the count is wrong for any reader who has turned the text up. At a font scale of 1.3 a
-line is 21.7dp rather than 17.4, and the ellipsis was watched firing on a four-line box on the
-device.
+sp, so the count is wrong for any reader who has turned the text up. A line is
+`1.2 × 12sp × scale + 3dp`, the 3dp of `lineSpacingExtra` being dp and so fixed: 17.4dp at a
+scale of 1, and 21.7dp at 1.3, not the 22.6 that scaling the whole line would give. The ellipsis
+was watched firing on a four-line box on the device.
 
 **The first design critique, and what it could fix without a decision.** Measured from the sources
 and a rendered reconstruction, no device. Two findings were high, both in the widget and both from
