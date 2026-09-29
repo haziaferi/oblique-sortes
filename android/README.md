@@ -36,9 +36,11 @@ test can choose what a pass looks like and pin down what happens at the seam
 between two of them. Nothing there loads the native library or touches a
 `Context`.
 
-That last point is the rule, not a coincidence: the JVM suite reaches `Native.kt`,
-`CardShoe.kt` and `WidgetBox.kt`, and reaches neither `MainActivity` nor
-`CardWidget`. Logic that wants a test goes in the first three. `WidgetBox` is
+That last point is the rule, not a coincidence: the JVM suite tests `Native.kt`,
+`CardShoe.kt` and `WidgetBox.kt`, and runs no line of `MainActivity` or
+`CardWidget` — it touches the second only to read one constant off its
+companion, `CardWidget.ACTION_DRAW`, which is the point of the test that reads
+it. Logic that wants a test goes in the first three. `WidgetBox` is
 the newest of them and the clearest case: how much of a card the widget can show
 is arithmetic over a height, so it is arithmetic over a height, and the widget
 only asks it.
@@ -126,11 +128,12 @@ rather than a silent fallback in each consumer.
   outright.
 - **Edge-to-edge means the status bar draws over the app's own ground, and
   the system picks its icon colour for the window, not the ground.** On the
-  light theme the clock came out white on pink, 1.0:1. `lightSystemBars()` asks
+  light theme the clock came out white on pink: `#FFFFFF` on `#FEEDEE`, 1.1:1,
+  which is as close to invisible as two colours get. `lightSystemBars()` asks
   for dark icons whenever the ground's luminance says it is light, so the answer
   follows whatever theme the device supplies.
-- **A phone on its side is 360dp tall.** The fixed chrome took all of it and the
-  card, on a weight of 1, was squeezed to 10dp. Below 480dp of window height the
+- **A phone on its side is 360dp tall.** The fixed chrome took all but 10dp of
+  it, and the card, on a weight of 1, got what was left. Below 480dp of window height the
   subtitle, blurb and provenance are `GONE` and the card gets the room.
 - **Edge-to-edge is not optional at `targetSdk 35+`.** `MainActivity` pads
   itself by the system-bar and display-cutout insets; without that the title
@@ -171,16 +174,20 @@ rather than a silent fallback in each consumer.
   at the top of `jni/src/lib.rs`.
 - **`versionCode` is derived, not typed.** It comes from the crate version, so
   the two cannot drift: 0.2.0 becomes 200.
-- **The widget cannot hold a shoe.** Each update runs in a fresh process, the
-  launcher's. So the Activity keeps a `CardShoe` and deals a whole shuffled
-  pass, while the widget asks for two cards and takes the one it is not already
-  showing — which covers the repeat anyone would notice, the same card twice
+- **The widget cannot hold a shoe.** An update runs in this app's own process,
+  not the launcher's — the launcher inflates the views it is handed, which is a
+  different thing — and that process is started for the broadcast and may be
+  gone before the next tap, so nothing survives in memory between two of them. What survives is
+  written down: the card on the widget is kept in `SharedPreferences`. So the
+  Activity keeps a `CardShoe` and deals a whole shuffled pass, while the widget
+  asks for two cards and takes the one that is not the one it wrote down last
+  time — which covers the repeat anyone would notice, the same card twice
   from one tap to the next. The card redraws on a tap; the deck name beneath it
   opens the app, which is otherwise unreachable from the home screen, so it is
   a 48dp target and its description carries the deck's name as well as what the
   tap does.
-- **The widget's floor is set by its longest card, and its floor is not its
-  default.** `ellipsize` fires only at `maxLines`, so a widget shorter than the
+- **The longest card sets the widget's default size, and its resize floor is
+  a different number.** `ellipsize` fires only at `maxLines`, so a widget shorter than the
   text simply clips it, with no sign it was cut. The card autosizes between 15sp
   and 12sp, and `minHeight` is what the 127-character card needs at 12sp plus
   the padding and the label's box. A provider that declares no `minResize*` is
@@ -192,7 +199,10 @@ rather than a silent fallback in each consumer.
   for a small widget ends in an ellipsis rather than being cut. That arithmetic
   divides a height in dp by a line in sp, so the reader's font scale is the
   other half of it: turn the text up and the same box holds fewer lines.
-  `ManifestAgreementTest` holds every number in it to the XML that states it.
+  `ManifestAgreementTest` holds `WidgetBox`'s constants to the XML that states
+  them — the padding, the label's box, the minimum size, the leading, the line
+  cap. The font scale is in no XML and is not one of them; `WidgetBoxTest`
+  covers it, by asking what the same box holds at 1.0, 1.3 and 1.8.
 - **Kept cards are stored as ids, not as text.** An id stops resolving when its
   card is reworded or its deck leaves the build, and the app says so. Text could
   not tell the difference, and would show the old wording for ever.
@@ -203,6 +213,9 @@ rather than a silent fallback in each consumer.
   is also the app's answer to `--all` — and costs no fifth button, of which the
   row has no room for one anyway.
 - **No permissions.** The decks are compiled into the native library. The app
-  reads nothing, writes nothing and opens no sockets. Sharing a card hands text
-  to `Intent.ACTION_SEND`, which is the system's chooser and not a connection of
+  opens no sockets and reads and writes nothing outside its own sandbox: the
+  deck last read, the kept ids and the card the widget is showing go to
+  `SharedPreferences`, which is private to the app and needs no permission, and
+  nothing else is stored at all. Sharing a card hands text to
+  `Intent.ACTION_SEND`, which is the system's chooser and not a connection of
   the app's own.

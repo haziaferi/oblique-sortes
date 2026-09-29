@@ -1,8 +1,8 @@
 # SPEC: oblique-sortes
 
 Status: **Complete. Parts 1–3 applied, all eight decks built (797 cards), and the CLI
-shipped.** What remains is listed under *Still open* at the end, and is deferred by choice
-rather than unfinished.
+shipped.** What remains is listed under *Still open* at the end: what is deferred by choice,
+what is genuinely open and waiting, and what no device walk has reached yet.
 
 **A note on names.** This document was written against the crate as received, which was called
 `oblique`. It now ships as the package **`oblique-sortes`**, with the library and binary both
@@ -44,9 +44,11 @@ Three structural facts constrain everything below:
 
 ## Part 1 — Curation of the original 176 (APPLIED)
 
-**Result: 176 → 156.** The only cut was collapsing variant wordings. Nothing was removed on
+**Result: 176 → 156.** The only cut was collapsing variant wordings. No card was removed on
 grounds of taste, register, or subject matter — no second-guessing Eno and Schmidt about what
-belongs in a creative deck.
+belongs in a creative deck. Register does decide *which* of a collapsed pair survives, and the
+table below gives that reason openly; what it never decides is whether a pair collapses at all,
+which is the "not a distinct prompt" test and nothing else.
 
 ### The governing principle
 
@@ -131,7 +133,8 @@ Paraphrasing the Eno deck card-for-card to sidestep copyright is **not recommend
   A paraphrase that tracks the deck one-for-one reproduces precisely that selection — it reads
   as a derivative work of the compilation, not as independent creation.
 - The status quo — ship the text with clear attribution to Eno and Schmidt, as the README does —
-  is what essentially every open implementation does.
+  is what the implementations looked at while deciding this all did, this crate's own upstream
+  included. No survey was run; it is an impression from a handful, not a count.
 
 **Decision:** keep the deck attributed rather than paraphrased; spend the effort on original
 decks that share the deck's *function* rather than its sequence. Judgement call, not legal
@@ -143,11 +146,13 @@ advice.
 
 Eight decks including the existing one. Each is standalone and drawn identically.
 
-Provenance is **per-deck, not global**. Three viable modes, and the right one differs by deck:
+Provenance is **per-deck, not global**. Four modes, and the right one differs by deck:
 **original** (written fresh, cleanly ISC), **public-domain** (verbatim from PD texts and PD
-*translations* — the translation's date governs, not the author's death date), and
+*translations* — the translation's date governs, not the author's death date),
 **technique-derived** (methods aren't copyrightable, only their expression; restate in original
-words).
+words), and **attributed** — text that is neither original nor public domain, carried with its
+authors named. Only `oblique` is attributed, and it is why the mode exists: the plan was written
+with three and the deck it was written for needed a fourth.
 
 | Deck | Register | Provenance | Sources / inspirations |
 |---|---|---|---|
@@ -155,7 +160,7 @@ words).
 | `examen` ✅ | Second-person past-tense interrogative, non-judgemental | **Original** (see below) | Register drawn from — not quoting — the Ignatian examen; the Stoic evening review in Seneca's *De Ira* III.36; Marcus Aurelius on other people's faults; Epictetus on what is ours to move; the Proust Questionnaire's habit of asking a preference to learn a character. **92 cards, max 100 chars.** |
 | `absurd` ✅ | Confrontational, second person throughout; finitude, freedom, self-deception | **Original** | Register from Kierkegaard (anxiety, the crowd, deciding without certainty), Nietzsche (would you take this life again), Heraclitus (nothing holds still), Ecclesiastes (being forgotten), Montaigne (how little you know). **Camus and Sartre: themes only, no formulations** — held at authoring time by a blocklist in the generator, which is not in this repo. **86 cards, max 120 chars.** |
 | `constraints` ✅ | Imperative procedure | **Technique-derived** | Oulipo (lipogram, univocalism, snowball, definitional literature, nth-noun substitution); Dada and Surrealist practice (words drawn from a bag, cut-up and fold-in, the folded sheet passed on, unsteered writing); Burroughs–Gysin cut-up. Every card restates a method in its own words; **none quotes a source**. **100 cards, max 120 chars.** |
-| `dramatis` ✅ | Generative; **labels, not sentences** | **PublicDomain** — the only sourced deck | Polti's thirty-six situations and their casts (**Ray trans. 1916**); Propp's functions (**1928 original; renderings our own, not from the in-copyright 1958 translation**); Aristotle on reversal and recognition (**Butcher 1895**). One edit: spellings normalized to the crate's US convention. **104 cards, max 90 chars.** |
+| `dramatis` ✅ | Generative; **labels, not sentences** | **PublicDomain** — the only deck written here whose text is sourced | Polti's thirty-six situations and their casts (**Ray trans. 1916**); Propp's functions (**1928 original; renderings our own, not from the in-copyright 1958 translation**); Aristotle on reversal and recognition (**Butcher 1895**). One edit: spellings normalized to the crate's US convention. **104 cards, max 90 chars.** |
 | `attention` ✅ | Imperative-to-notice; closest to Eno's "Water", "Ghost echoes" | **Original** (the "PD + original" fork, resolved as recommended) | Register from Thoreau watching a pond through a year; haiku; Zhuangzi and the *Tao Te Ching* on the usefulness of what is not there; Sei Shōnagon's lists of things worth noticing. No card quotes any of them. **93 cards, max 60 chars — the tightest ceiling in the crate, and the point of the deck.** |
 | `memento` ✅ | Finitude, plain and unconsoling; **declarative only** | **Original** | Register from Marcus Aurelius (only the present can be lost), Seneca (length is not the measure), Montaigne (the practice of thinking about dying), and the *ars moriendi* tradition. No card quotes any of them. **Rilke is untouched** — his letters remain in copyright, and the generator's blocklist guarded the famous mortality formulations besides. **76 cards, max 110 chars.** |
 | `stuck` ✅ | Eno's territory, worked in the opposite direction: **methodical, not lateral** | **Original** | Descartes on accepting nothing unexamined, dividing a difficulty, enumerating completely (1637); Pólya on restating the problem, solving a simpler one first, working backwards, finding a solved problem that resembles this one. Methods are restatable, their wording is not — a blocklist in the generator guarded Pólya, de Bono and IDEO phrasings. **90 cards, max 80 chars.** |
@@ -169,14 +174,16 @@ labelled truthfully; the quoted cards would need per-card attribution the schema
 `examen` was therefore written **entirely originally**, with the traditions named in the module
 doc as sources of *register*, not of text. No card quotes any of them.
 
-The same fork now faces every "PD + original" row above — `attention` and `memento`. Each must
-either go fully original, or `Deck` must grow a per-card attribution field. **Going fully
-original is recommended**: it keeps the schema flat and matches the decision already taken on
-the Eno deck, that the effort belongs in original writing rather than in reproducing sources.
+The same fork faced every "PD + original" row above — `attention` and `memento`. Each had to
+either go fully original, or `Deck` had to grow a per-card attribution field. **Going fully
+original was recommended and is what shipped**: it keeps the schema flat and matches the decision
+already taken on the Eno deck, that the effort belongs in original writing rather than in
+reproducing sources. Both decks carry `Original`, and `Deck` never grew the field.
 
-**Voice rules, per deck, enforced by test where mechanisable:** target card count (aim 60–120,
-so a deck feels deep but curated), max card length, permitted grammatical moods, and one
-orthography convention. The Eno deck's three registers — bare imperative ("Be dirty"),
+**Voice rules, per deck, enforced by test where mechanisable:** target card count for a deck
+written here (aim 60–120, so a deck feels deep but curated — `oblique` is inherited at 156 and
+is not held to it), max card length, permitted grammatical moods, and one orthography
+convention. The Eno deck's three registers — bare imperative ("Be dirty"),
 interrogative ("Is it finished?"), bare noun-phrase ("Accretion") — are the model to hold each
 new deck against.
 
@@ -207,8 +214,8 @@ table. Deck-scoped methods mirror the existing free functions exactly — `Deck:
 `random_str()`, `random_n(n)`, `count()`, `cards()` — reusing the current bodies verbatim. The
 shuffle-indices approach in `random_n` is fine as-is at this scale.
 
-**No breaking change:** the six existing top-level functions stay, delegating to the `oblique`
-deck. `strategies_as_slice()` and `count()` stay `const fn`.
+**No breaking change:** the six top-level functions that existed when this was written stay,
+delegating to the `oblique` deck — the surface has since grown to ten, additively. `strategies_as_slice()` and `count()` stay `const fn`.
 
 Add `decks() -> &'static [&'static Deck]` and `deck_by_id(&str) -> Option<&'static Deck>`.
 
@@ -222,8 +229,11 @@ because it is assembled under `#[cfg]`. That was wrong — `cfg` resolves at com
 `#[cfg]` on the array elements composes fine with `const fn`. `decks()` is `const fn`, which
 keeps the crate's const-everywhere character.
 
-A build with no deck feature at all raises `compile_error!` with a one-line message. The six
-top-level Oblique functions are themselves `#[cfg(feature = "oblique")]` — without that gate the
+A build with no deck feature at all raises `compile_error!` with a one-line message. The
+top-level functions that delegate to the Oblique deck -- seven of the crate's ten, being the
+six this plan counts plus the one it adds. They are `strategies_as_slice`, `strategies`,
+`random`, `random_str`, `random_n`, `random_n_str` and `count`; the ungated three are `decks`,
+`deck_by_id` and `card_by_id`, which name a deck or hand one back rather than assuming one -- are themselves `#[cfg(feature = "oblique")]` — without that gate the
 `compile_error!` was followed by a cascade of unresolved-path errors, which is not a clean
 failure.
 
@@ -235,14 +245,20 @@ all now fixed:
    called the feature-gated top-level functions, so neither compiled without `oblique`. Both
    now draw from `decks().first()`, which is `oblique` whenever it is enabled, so the default
    build is unchanged.
-2. Nine tests exercising the top-level functions needed `#[cfg(feature = "oblique")]`.
+2. Nine tests exercising the top-level functions needed `#[cfg(feature = "oblique")]` --
+   the count of tests that had to be gated during this refactor, which is not the count of
+   tests the `oblique` feature adds to a bare build.
 3. Eight doctests hardcoded `deck_by_id("oblique").expect(...)` and panicked in an examen-only
    build. Doctests cannot be feature-gated, so they are now deck-agnostic — the only form true
    under every supported feature set.
 
 The feature matrix is part of verification, not a claim. Counts below are lib unit tests /
 doctests, measured on rustc 1.92; the 26 CLI tests in `src/bin/sortes.rs` are the same in
-every configuration.
+every configuration that builds at all. The lib column does not add up to its
+last row and is not meant to: each row is a whole build, counting the shared tests over again,
+while `--all-features` compiles every deck's invariant block and voice tests at once. The doc
+column does add up, 31 + 7 = 38, because doctests cannot be feature-gated and only `oblique`
+brings any of its own. Every figure here is measured, not derived.
 
 | Configuration | lib | doc |
 |---|---:|---:|
@@ -250,12 +266,13 @@ every configuration.
 | `examen`, `constraints`, `absurd` or `stuck` alone | 30 | 31 |
 | `attention` or `memento` alone — each carries one voice test | 31 | 31 |
 | `dramatis` alone — a voice test and the attribution test | 32 | 31 |
-| `--all-features` | 101 | 38 |
+| `--all-features` | 102 | 38 |
 | no deck feature | — | one clean `compile_error!` |
 
 The gaps between the rows are the feature gating, and they add up: `oblique` alone carries
 eleven more lib tests than a bare deck (ten top-level ones plus the pinned derivation) and seven
-more doctests (one per top-level function). `tests/cli.rs` runs the binary itself and is counted
+more doctests — not one per top-level function, of which there are ten; the seven are the
+doctests that name a card or a count and so only run with `oblique` compiled in. `tests/cli.rs` runs the binary itself and is counted
 in neither column.
 
 Run every row when adding a deck — a deck-only build is the configuration that catches
@@ -268,11 +285,17 @@ hold the matrix.
 `(deck_id, index)` is the cheapest handle but is unstable across edits. Rather than adding an ID
 field now, enforce **alphabetical sort order per deck** with a test; that makes indices
 predictable and diffs reviewable. Revisit only if favourites, history, or sharing land later.
+✅ The test is `sorted_by_first_line`, one per deck through `deck_invariants!`. Sharing did land,
+and with it `CardId` — see *Closed since*.
 
-**Caveat found during curation:** the deck is sorted by *displayed* text, not by literal. A
-naive `is_sorted()` test fails on `"Think\n\t-inside the work…"`, which sorts by its escape
-sequence and lands after `"Think of the radio"`. This predates the curation cut. The sort test
-must compare on the first line of each card, not the raw literal.
+**Caveat recorded during curation, and wrong:** it said a naive `is_sorted()` fails on
+`"Think\n\t-inside the work…"`, which "sorts by its escape sequence and lands after
+`"Think of the radio"`". It lands *before* it, and always would have: a continuation opens with
+`\n`, 0x0A, which is below every character a first line can end on — below the space in "Think
+of", so the shorter first line wins. The deck is in plain string order today and a naive
+`is_sorted()` passes on it. The sort test compares first lines anyway, which is the property
+actually wanted and which the raw order happens to match; §Android records the same arithmetic
+from the other side, where it is what lets Kotlin's `sorted()` reproduce a deck's own order.
 
 ### Tests
 
@@ -345,6 +368,9 @@ Preserve `println!` of the raw string so the `\n\t` convention keeps rendering f
   same check CI runs, as a script so it runs locally too.
 - ✅ `android/app/src/test/kotlin/dev/feridottir/sortes/ManifestAgreementTest.kt` — the manifest,
   the widget's provider XML and the Kotlin held to the facts they each state twice.
+- ✅ `android/app/src/main/kotlin/dev/feridottir/sortes/WidgetBox.kt` — how much of a card the
+  widget's box can hold, as arithmetic over a height rather than a comment in the provider XML.
+  The third file the JVM suite reaches, and the reason a widget may now be made small.
 - ✅ `README.md` — deck table, per-deck attribution, provenance policy, install instructions.
 - ✅ `.github/workflows/release.yml` — `BINARY_NAME` follows `[[bin]]`, since that is what the
   pipeline uploads and hands to the Homebrew tap.
@@ -366,9 +392,11 @@ Preserve `println!` of the raw string so the `\n\t` convention keeps rendering f
    is the evidence the step-2 design was right.
 
    **All four `Provenance` variants are now exercised**, so none is dead code: `Attributed`
-   (`oblique`), `Original` (`examen`, `absurd`, `attention`, `memento`), `Technique`
-   (`constraints`), and `PublicDomain` (`dramatis`). A test asserts `dramatis` carries a credit
-   line, since it is the only deck whose text is not ours.
+   (`oblique`), `Original` (`examen`, `absurd`, `attention`, `memento`, `stuck`), `Technique`
+   (`constraints`), and `PublicDomain` (`dramatis`). The text of `oblique` and of `dramatis` is not ours, and
+   each carries that differently: `oblique` is Eno and Schmidt's, which is what `Attributed` says,
+   and `dramatis` is out of public-domain sources, which is what `PublicDomain` says. A test
+   asserts only the second carries a credit line, because only the second's sources need one.
 
    **Each deck's voice rules were enforced by its generator at the time the deck was built.**
    The generator exited non-zero rather than write a bad file — on `absurd` it caught four
@@ -402,11 +430,13 @@ Preserve `println!` of the raw string so the `\n\t` convention keeps rendering f
      asking and instructing; `memento` only states. `memento` carries 0 question marks against
      `absurd`'s 15, and refuses any card opening with an imperative verb.
 
-   **Adding a deck touches exactly five places**, and nothing else: `src/decks/<id>.rs`, a
-   `pub mod` line in `src/decks/mod.rs`, a feature in `Cargo.toml` (plus the `full` list and
-   the `compile_error!` cfg), an entry in `decks()`, and a `deck_invariants!` line with the
-   deck's count and max length. How the card text gets written is your business; the eight
-   here came from one-off generators that this repo does not carry.
+   **Adding a deck touches four files and nothing else**: `src/decks/<id>.rs`, a `pub mod`
+   line in `src/decks/mod.rs`, a feature in `Cargo.toml` with the `full` list beside it, and
+   `src/lib.rs` three times over — the `compile_error!` cfg list, an entry in `decks()`, and a
+   `deck_invariants!` line with the deck's count and max length.
+   How the card text gets written is your business; the seven written here came from one-off
+   generators that this repo does not carry, and `oblique` came from the curation pass in
+   Part 1 rather than from a generator at all.
 5. ~~**CLI and README** last, once the deck set is stable.~~ **Done.** The grammar is a pure
    `parse()` function over the arguments with 26 unit tests, so the CLI is testable without
    spawning a process. `--help` and `--version` were added beyond the sketch below; a CLI that
@@ -460,14 +490,38 @@ either ask or instruct.
 
 ## Still open
 
-Nothing here is unfinished work; each is a decision taken deliberately.
+Two kinds of thing, and they are not the same kind: decisions taken deliberately, which need
+nothing from anyone, and open actions, which are waiting on something.
 
-1. **Two questions about the Eno deck.** Restore "Give the name away" if it can be confirmed in
-   a physical edition. Decide whether to drop the editorial `(?)` from "Idiot glee (?)".
-2. **A per-card note field**, which the two Eno cards carrying inline glosses want.
-3. **i18n**, which the compile-time `const` blocks outright. Translating would mean giving up
+**Deferred by choice.**
+
+1. **A per-card note field**, which the two Eno cards carrying inline glosses want.
+2. **i18n**, which the compile-time `const` blocks outright. Translating would mean giving up
    `const fn` on `strategies_as_slice()` and `count()` — the one change in this project that
    would actually break the public API.
+
+**Open, and waiting.**
+
+3. **Restore "Give the name away"** if it can be confirmed in a physical edition. Waiting on a
+   copy of the deck, which no amount of work here supplies.
+4. **Decide whether to drop the editorial `(?)`** from "Idiot glee (?)". Waiting on a judgement
+   that has not been made. Dropping it changes a card's text, and so its [`CardId`], which is
+   what a kept card is stored as — the decision is cheap and its consequence is not.
+
+### Not yet walked
+
+The device walks closed what they reached; these were never reached, and a list beats a memory.
+
+- **TalkBack has never been run on this app.** Every accessibility claim in this document and in
+  `android/README.md` is read from the code, not heard. The widget's `contentDescription` is the
+  one to hear first: a description *replaces* a RemoteViews text rather than adding to it, which
+  is why the deck name had to be written into it, and only a screen reader says whether that
+  reads well twice over.
+- **The spinner's dropdown and the dialog list**, whose row height for 156 multi-line items the
+  critique could not verify from the sources and no walk has measured since.
+- **A fresh widget placement.** The widget on the phone was dragged to one row during the walk
+  that produced `minResizeHeight`; what a launcher gives a widget placed after that change has
+  not been seen.
 
 ### Closed since
 
@@ -509,8 +563,8 @@ in the API docs, in `--help` and in the README rather than promised away.
 
 **Three JNI entry points were shipping unverified against R8.** The CI step that reads the
 shipped DEX was written when the surface was two calls, and it named them: `for method in decks
-draw`. Adding the shoe, the card ids and the search grew the surface to five, and the loop stayed
-as it was — so `shuffled`, `cardId` and `cardById` were covered by nothing, while four places in
+draw`. Adding the shoe and the card ids grew the surface to five — the search added nothing to it,
+since `cardsMatching` runs in Kotlin over a list already in hand — and the loop stayed as it was — so `shuffled`, `cardId` and `cardById` were covered by nothing, while four places in
 prose went on saying "two". The failure that step exists to catch is invisible at build time and
 fatal on the device, so it must not depend on a list anyone has to remember to extend: it now
 reads the method names out of `Native.kt`, and grows with the surface. The keep rule in
@@ -548,10 +602,13 @@ nothing else.
 **The first device walk, on the OnePlus 9 Pro (Android 14, 360×804dp).** Three defects no
 reconstruction could show, all measured from screenshots rather than judged. Every line the
 Activity built in code was `textColorSecondary`, because a bare `TextView` takes the default
-text appearance: `#837274` on `#FEEDEE` for the title (4.0:1) and the card (3.6:1), and 2.5:1 for
-the three dimmed lines, against an assumed 16.7:1. `text()` now sets `textColorPrimary`; measured
-after: 15.2, 13.5 and 6.3:1. The status bar drew white on the light ground (1.0:1), because
-edge-to-edge leaves the icon colour to the window; it follows the ground's luminance now (15.8:1).
+text appearance: `#837274` on the `#FEEDEE` ground for the title (4.0:1), the same grey on the
+card's own surface — the theme's ink at six percent over that ground, `#F1E0E1` — for the card
+(3.6:1), and 2.5:1 for the three dimmed lines, which sit on the ground rather than the card and
+carry the app's 0.72 alpha over it. All three against an assumed 16.7:1. `text()` now sets `textColorPrimary`; measured
+after: 15.2, 13.5 and 6.3:1. The status bar drew white on the light ground — `#FFFFFF` on `#FEEDEE`, 1.1:1, which is as
+close to invisible as two colours get — because edge-to-edge leaves the icon colour to the
+window; it follows the ground's luminance now (15.8:1).
 And in landscape the card was 10dp tall, the fixed chrome having taken the 360dp; below 480dp of
 height the secondary lines yield. What the walk confirmed as built: "Saved" on one line at 72dp,
 every button 48dp, the empty-search browse titled by deck and in `--all` order, Keep→Kept and the
@@ -570,9 +627,10 @@ cards fill under a third of it. The floor and the default are now separate: `min
 the room two lines need, and `WidgetBox.linesFor` sets the card's `maxLines` from the height the
 host reports, so what a small widget cannot show ends in an ellipsis instead of being cut blind.
 Measuring the resized widget found the second half of it — the box is in dp and the card is in
-sp, so the count is wrong for any reader who has turned the text up. At a font scale of 1.3 a
-line is 21.7dp rather than 17.4, and the ellipsis was watched firing on a four-line box on the
-device.
+sp, so the count is wrong for any reader who has turned the text up. A line is
+`1.2 × 12sp × scale + 3dp`, the 3dp of `lineSpacingExtra` being dp and so fixed: 17.4dp at a
+scale of 1, and 21.7dp at 1.3, not the 22.6 that scaling the whole line would give. The ellipsis
+was watched firing on a four-line box on the device.
 
 **The first design critique, and what it could fix without a decision.** Measured from the sources
 and a rendered reconstruction, no device. Two findings were high, both in the widget and both from
@@ -580,8 +638,10 @@ the previous two days' work: at its 110dp minimum a long card was cut after two 
 with no ellipsis, because `ellipsize` fires only at `maxLines`; and the deck name — since it opens
 the app — was a 21dp tap target whose `contentDescription` replaced the deck's name for TalkBack.
 The card now autosizes 15sp→12sp and the floor is what the longest card needs at 12sp with the
-label's 48dp box (200dp), held by a test whose assertion carries the arithmetic; the description
-carries both facts. The mechanical rest went in with it: the browse dialog titled by deck rather
+label's 48dp box — 200dp, which was then also the smallest the widget could be, as the widget
+walk above found. The arithmetic has since moved into `WidgetBox`, and
+`ManifestAgreementTest` holds its constants to the XML that states them. The description carries
+both facts. The mechanical rest went in with it: the browse dialog titled by deck rather
 than "156 matching", the failure screen as a sentence over the exception rather than the
 exception alone, a fading edge on the scroll, 12sp where there was 11, two directive empty states,
 spacing on a 4dp grid. Three findings were decisions, taken the same day: the card sits on a tonal
